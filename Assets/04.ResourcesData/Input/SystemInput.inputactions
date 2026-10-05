@@ -47,19 +47,39 @@
                     "priority": 0
                 },
                 {
-                    "name": "SelectSlot",
-                    "type": "PassThrough",
-                    "id": "562513da-a307-4701-886a-d1f7c6e4a6db",
-                    "expectedControlType": "Axis",
+                    "name": "Execute",
+                    "type": "Button",
+                    "id": "d88d3ba2-03a5-47d0-8db4-f2ac9a53e7ad",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false,
                     "priority": 0
                 },
                 {
-                    "name": "Execute",
+                    "name": "Teleport",
                     "type": "Button",
-                    "id": "d88d3ba2-03a5-47d0-8db4-f2ac9a53e7ad",
+                    "id": "40063072-2b06-4e72-a7ec-9e6e46df9e04",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
+                    "name": "Roll",
+                    "type": "Button",
+                    "id": "43256854-75c4-4b93-9567-e5b336af934a",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
+                    "name": "Dash",
+                    "type": "Button",
+                    "id": "885b044d-e603-4764-a21f-ba93060d6745",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -136,45 +156,45 @@
                 },
                 {
                     "name": "",
-                    "id": "6f21689c-4493-4881-824e-ba87c5692e75",
-                    "path": "<Mouse>/scroll/y",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Windows",
-                    "action": "SelectSlot",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "6f337e48-572a-4791-b3f2-789bb420a934",
-                    "path": "<Keyboard>/leftArrow",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Windows",
-                    "action": "SelectSlot",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "15aabdb8-7560-4cad-b8e9-1dc4a10c1360",
-                    "path": "<Keyboard>/rightArrow",
-                    "interactions": "",
-                    "processors": "Scale(factor=-1)",
-                    "groups": "Windows",
-                    "action": "SelectSlot",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "7156b86f-04e9-45fb-9b75-e15ce45caa9b",
-                    "path": "<Keyboard>/f",
+                    "path": "<Keyboard>/e",
                     "interactions": "",
                     "processors": "",
                     "groups": "Windows",
                     "action": "Execute",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "19e67f8a-5eab-47b0-999b-16bdfa551993",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Teleport",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1f710440-7c21-4f99-b2dd-01451446deef",
+                    "path": "<Keyboard>/leftShift",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Roll",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7591314b-16d3-4112-8ac8-deab44c7be4c",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Windows",
+                    "action": "Dash",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

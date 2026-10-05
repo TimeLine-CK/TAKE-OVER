@@ -1,6 +1,6 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-09-15
-/// 기능: 추적 대상의 이동 방향을 반영하며 데드존 안에서 카메라를 이동 시킨다.
+/// 스크립트 최종 수정일: 2026-09-29
+/// 기능: 추적 대상의 이동 방향을 반영하며 데드존과 맵 경계 안에서 카메라를 이동 시킨다.
 /// </summary>
 
 using UnityEngine;
@@ -8,26 +8,30 @@ using UnityEngine;
 
 public sealed class CameraFollow2D : MonoBehaviour
 {
-    [SerializeField] private Transform target; // 추적할 플레이어
-    [SerializeField] private Vector2 deadZoneSize = new(3f, 1.5f); // 카메라가 멈추는 영역
-    [SerializeField, Min(0f)] private float followSharpness = 6f; // 추적 반응 속도
-    [SerializeField, Min(0f)] private float lookAheadDistance = 2f; // 이동 방향을 미리 보여주는 거리
-    [SerializeField, Min(0f)] private float lookAheadSharpness = 4f; // 시점 전환 반응 속도
+    [SerializeField] private Transform target;                          // 추적할 플레이어
+    [SerializeField] private Collider2D cameraBounds;                   // 카메라가 벗어나지 않을 맵 경계
+    [SerializeField] private Vector2 deadZoneSize = new(3f, 1.5f);      // 카메라가 멈추는 영역
+    [SerializeField] private float followSharpness = 6f;                // 추적 반응 속도
+    [SerializeField] private float lookAheadDistance = 2f;              // 이동 방향을 미리 보여주는 거리
+    [SerializeField] private float lookAheadSharpness = 4f;             // 시점 전환 반응 속도
 
-    private Rigidbody2D targetBody; // 추적 대상의 이동 속도를 읽는 리지드바디
-    private float lookDirection; // 현재 바라볼 수평 방향
-    private float currentLookAhead; // 현재 적용된 시선 선행 거리
-    private Transform returnTarget; // 복귀 시 다시 추적할 대상
-    private Vector3 returnStartPosition; // 카메라 복귀 시작 위치
-    private float returnDuration; // 카메라 복귀에 사용할 시간
-    private float returnElapsed; // 카메라 복귀가 진행된 시간
-    private bool isReturning; // 카메라가 복귀 중인지 여부
+    private Rigidbody2D targetBody;         // 추적 대상의 이동 속도를 읽는 리지드바디
+    private Camera currentCamera;           // 화면 크기를 계산할 카메라
+    private float lookDirection;            // 현재 바라볼 수평 방향
+    private float currentLookAhead;         // 현재 적용된 시선 선행 거리
+    private Transform returnTarget;         // 복귀 시 다시 추적할 대상
+    private Vector3 returnStartPosition;    // 카메라 복귀 시작 위치
+    private float returnDuration;           // 카메라 복귀에 사용할 시간
+    private float returnElapsed;            // 카메라 복귀가 진행된 시간
+    private bool isReturning;               // 카메라가 복귀 중인지 여부
 
     /// <summary>
     /// 추적 대상을 찾고 이동 정보에 필요한 참조를 초기화한다.
     /// </summary>
     private void Awake()
     {
+        currentCamera = GetComponent<Camera>();
+
         if (target == null)
         {
             GameObject player = GameObject.FindGameObjectWithTag("Player");
@@ -41,6 +45,7 @@ public sealed class CameraFollow2D : MonoBehaviour
 
         Debug.Assert(target != null, "CameraFollow2D의 Target을 찾지 못했습니다.", this);
         Debug.Assert(targetBody != null, "CameraFollow2D의 Target에 Rigidbody2D가 없습니다.", this);
+        Debug.Assert(currentCamera != null, "CameraFollow2D와 같은 오브젝트에 Camera가 없습니다.", this);
     }
 
     /// <summary>
@@ -121,7 +126,7 @@ public sealed class CameraFollow2D : MonoBehaviour
             desired.y = focusPosition.y - Mathf.Sign(distance.y) * halfDeadZone.y;
 
         float blend = 1f - Mathf.Exp(-followSharpness * Time.unscaledDeltaTime);
-        transform.position = Vector3.Lerp(current, desired, blend);
+        transform.position = ClampToBounds(Vector3.Lerp(current, desired, blend));
     }
 
     /// <summary>
@@ -131,7 +136,29 @@ public sealed class CameraFollow2D : MonoBehaviour
     {
         Vector3 destination = returnTarget.position;
         destination.z = returnStartPosition.z;
-        transform.position = Vector3.Lerp(returnStartPosition, destination, progress);
+        transform.position = ClampToBounds(Vector3.Lerp(returnStartPosition, destination, progress));
+    }
+
+    /// <summary>
+    /// 화면 전체가 맵 경계 안에 들어오도록 카메라 중심 위치를 제한한다.
+    /// </summary>
+    private Vector3 ClampToBounds(Vector3 position)
+    {
+        if (cameraBounds == null || currentCamera == null || !currentCamera.orthographic)
+            return position;
+
+        Bounds bounds = cameraBounds.bounds;
+        float halfHeight = currentCamera.orthographicSize;
+        float halfWidth = halfHeight * currentCamera.aspect;
+
+        position.x = bounds.size.x <= halfWidth * 2f
+            ? bounds.center.x
+            : Mathf.Clamp(position.x, bounds.min.x + halfWidth, bounds.max.x - halfWidth);
+        position.y = bounds.size.y <= halfHeight * 2f
+            ? bounds.center.y
+            : Mathf.Clamp(position.y, bounds.min.y + halfHeight, bounds.max.y - halfHeight);
+
+        return position;
     }
 
     /// <summary>

@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-09-16
+/// 스크립트 최종 수정일: 2026-09-28
 /// 기능: 플레이어 원본을 복제해 녹화용 또는 재생용 잔상으로 구성한다.
 /// </summary>
 
@@ -42,7 +42,7 @@ public sealed class EchoActorFactory
     /// <summary>
     /// 저장된 기록을 실행할 재생용 잔상을 생성한다.
     /// </summary>
-    public GameObject CreatePlayback(EchoRecording recording, Action finished)
+    public GameObject CreatePlayback(EchoRecording recording, float lingerDuration, Action finished)
     {
         GameObject actor = CreateCopy(recording.StartState.Position, source.transform.rotation);
         actor.name = $"Echo Playback {recording.Id}";
@@ -52,7 +52,7 @@ public sealed class EchoActorFactory
         result.Motor.RestoreSnapshot(recording.StartState);
 
         EchoPlayback playback = actor.AddComponent<EchoPlayback>();
-        playback.Initialize(recording, finished);
+        playback.Initialize(recording, lingerDuration, finished);
         return actor;
     }
 
@@ -80,6 +80,9 @@ public sealed class EchoActorFactory
     private static EchoActor Configure(GameObject actor)
     {
         UnityEngine.Object.Destroy(actor.GetComponent<EchoController>());
+        UnityEngine.Object.Destroy(actor.GetComponent<TPPointController>());
+        UnityEngine.Object.Destroy(actor.GetComponent<PlayerCommandController>());
+        actor.tag = "Afterimage";
         actor.GetComponent<PlayerInputReader>().enabled = false;
 
         PlayerMotor motor = actor.GetComponent<PlayerMotor>();
@@ -122,12 +125,7 @@ public readonly struct EchoActor
     /// <summary>
     /// 잔상 동작에 필요한 컴포넌트 참조를 하나로 묶는다.
     /// </summary>
-    public EchoActor(
-        GameObject gameObject,
-        PlayerMotor motor,
-        PlayerCombat combat,
-        PlayerAnimator animator
-    )
+    public EchoActor(GameObject gameObject, PlayerMotor motor, PlayerCombat combat, PlayerAnimator animator)
     {
         GameObject = gameObject;
         Motor = motor;

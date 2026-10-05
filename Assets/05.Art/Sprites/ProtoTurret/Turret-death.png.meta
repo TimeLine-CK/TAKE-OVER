@@ -1,0 +1,363 @@
+fileFormatVersion: 2
+guid: 26526e05b7bb0ca4788e57b0e8287380
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -7513468288846228875
+    second: Turret-death_0
+  - first:
+      213: 9219944271911021617
+    second: Turret-death_1
+  - first:
+      213: -7652268123683325325
+    second: Turret-death_2
+  - first:
+      213: -155633610521843209
+    second: Turret-death_3
+  - first:
+      213: -7435471663466616734
+    second: Turret-death_4
+  - first:
+      213: -1521763987179681552
+    second: Turret-death_5
+  - first:
+      213: -6822190508871657668
+    second: Turret-death_6
+  - first:
+      213: 5686958076703029072
+    second: Turret-death_7
+  - first:
+      213: -8288242612083066692
+    second: Turret-death_8
+  - first:
+      213: 379075425390504318
+    second: Turret-death_9
+  - first:
+      213: -8829451161562785744
+    second: Turret-death_10
+  - first:
+      213: 9094150008347591192
+    second: Turret-death_11
+  - first:
+      213: -2244392443922979590
+    second: Turret-death_12
+  - first:
+      213: 6758233217989055398
+    second: Turret-death_13
+  - first:
+      213: -8300448924709585640
+    second: Turret-death_14
+  - first:
+      213: -2123007747780368520
+    second: Turret-death_15
+  - first:
+      213: 615476059178159231
+    second: Turret-death_16
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 150
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Turret-death_0
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 453
+        width: 392
+        height: 341
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 572982c366ccab790800000000000000
+      internalID: -7513468288846228875
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Turret-death_3
+      rect:
+        serializedVersion: 2
+        x: 441
+        y: 453
+        width: 441
+        height: 341
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7f9ebb94e0417ddf0800000000000000
+      internalID: -155633610521843209
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Turret-death_5
+      rect:
+        serializedVersion: 2
+        x: 901
+        y: 452
+        width: 441
+        height: 341
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0f84c2067bb91eae0800000000000000
+      internalID: -1521763987179681552
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Turret-death_8
+      rect:
+        serializedVersion: 2
+        x: 1350
+        y: 452
+        width: 412
+        height: 341
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cb8788ed14f3afc80800000000000000
+      internalID: -8288242612083066692
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Turret-death_13
+      rect:
+        serializedVersion: 2
+        x: 1348
+        y: 20
+        width: 406
+        height: 240
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a39b7b1e411acd50800000000000000
+      internalID: 6758233217989055398
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Turret-death_14
+      rect:
+        serializedVersion: 2
+        x: 44
+        y: 19
+        width: 406
+        height: 240
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 81d796e3ea1eecc80800000000000000
+      internalID: -8300448924709585640
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Turret-death_15
+      rect:
+        serializedVersion: 2
+        x: 480
+        y: 18
+        width: 406
+        height: 240
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 877262a93bf8982e0800000000000000
+      internalID: -2123007747780368520
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Turret-death_16
+      rect:
+        serializedVersion: 2
+        x: 901
+        y: 18
+        width: 406
+        height: 240
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f7c4213073c9a8800800000000000000
+      internalID: 615476059178159231
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 2d9e6ba056c749b48b2eba1ac5f9c26f
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      Turret-death_0: -7513468288846228875
+      Turret-death_1: 9219944271911021617
+      Turret-death_10: -8829451161562785744
+      Turret-death_11: 9094150008347591192
+      Turret-death_12: -2244392443922979590
+      Turret-death_13: 6758233217989055398
+      Turret-death_14: -8300448924709585640
+      Turret-death_15: -2123007747780368520
+      Turret-death_16: 615476059178159231
+      Turret-death_2: -7652268123683325325
+      Turret-death_3: -155633610521843209
+      Turret-death_4: -7435471663466616734
+      Turret-death_5: -1521763987179681552
+      Turret-death_6: -6822190508871657668
+      Turret-death_7: 5686958076703029072
+      Turret-death_8: -8288242612083066692
+      Turret-death_9: 379075425390504318
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

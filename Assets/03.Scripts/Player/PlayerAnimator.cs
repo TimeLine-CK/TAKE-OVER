@@ -1,22 +1,23 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-09-15
-/// 기능: 플레이어의 이동과 점프 상태를 Animator 파라미터와 공격 트리거에 반영.
+/// 스크립트 최종 수정일: 2026-09-29
+/// 기능: 플레이어의 이동과 점프 상태를 Animator 파라미터와 공격 및 구르기 트리거에 반영한다.
 /// </summary>
 
 using UnityEngine;
 
 public class PlayerAnimator : MonoBehaviour
 {
-    [SerializeField] private PlayerMotor motor; // 이동 및 접지 상태를 제공하는 컴포넌트
+    [SerializeField] private PlayerMotor motor;             // 이동 및 접지 상태를 제공하는 컴포넌트
     [SerializeField] private PlayerInputReader inputReader; // 이동 입력을 제공하는 컴포넌트
-    private Animator animator; // 캐릭터 애니메이션을 제어하는 Animator
+    private Animator animator;                              // 캐릭터 애니메이션을 제어하는 Animator
 
-    private readonly int isGroundedHash = Animator.StringToHash("IsGrounded"); // 접지 파라미터 해시
-    private readonly int speedHash = Animator.StringToHash("Speed"); // 이동 속도 파라미터 해시
-    private readonly int verticalVelocityHash = Animator.StringToHash("VerticalVelocity"); // 수직 속도 파라미터 해시
-    private readonly int attackHash = Animator.StringToHash("Attack"); // 공격 트리거 해시
-    private float idleTimer; // 대기 애니메이션 전환까지 남은 시간
-    private const float IdleGraceTime = 0.05f; // 0.05초 동안은 달리기 상태 유지
+    private readonly int isGroundedHash = Animator.StringToHash("IsGrounded");              // 접지 파라미터 해시
+    private readonly int speedHash = Animator.StringToHash("Speed");                        // 이동 속도 파라미터 해시
+    private readonly int verticalVelocityHash = Animator.StringToHash("VerticalVelocity");  // 수직 속도 파라미터 해시
+    private readonly int attackHash = Animator.StringToHash("Attack");                      // 공격 트리거 해시
+    private readonly int rollHash = Animator.StringToHash("Roll");                          // 구르기 트리거 해시
+    private float idleTimer;                                                                // 대기 애니메이션 전환까지 남은 시간
+    private const float IdleGraceTime = 0.05f;                                              // 0.05초 동안은 달리기 상태 유지
 
 
     private void Awake()
@@ -65,6 +66,15 @@ public class PlayerAnimator : MonoBehaviour
     }
 
     /// <summary>
+    /// 구르기 트리거를 초기화한 뒤 다시 활성화한다.
+    /// </summary>
+    public void PlayRoll()
+    {
+        animator.ResetTrigger(rollHash);
+        animator.SetTrigger(rollHash);
+    }
+
+    /// <summary>
     /// 현재 애니메이션 상태와 재생 위치를 저장.
     /// </summary>
     public AnimationSnapshot CaptureSnapshot()
@@ -79,6 +89,7 @@ public class PlayerAnimator : MonoBehaviour
     public void RestoreSnapshot(AnimationSnapshot snapshot)
     {
         animator.ResetTrigger(attackHash);
+        animator.ResetTrigger(rollHash);
         animator.Play(snapshot.StateHash, 0, snapshot.NormalizedTime);
         animator.Update(0f);
     }

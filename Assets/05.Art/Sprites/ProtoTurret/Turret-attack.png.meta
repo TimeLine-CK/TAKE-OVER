@@ -1,0 +1,392 @@
+fileFormatVersion: 2
+guid: 380563bc9dc1a974b82b30fe647ec1a8
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 4875789025449216770
+    second: Turret-attack_0
+  - first:
+      213: 3439429451396275059
+    second: Turret-attack_1
+  - first:
+      213: -4253354625088371730
+    second: Turret-attack_2
+  - first:
+      213: -3654455406611734471
+    second: Turret-attack_3
+  - first:
+      213: 6329741634847493938
+    second: Turret-attack_4
+  - first:
+      213: 9139156869032544288
+    second: Turret-attack_5
+  - first:
+      213: -4980174656093077225
+    second: Turret-attack_6
+  - first:
+      213: 357507665269847818
+    second: Turret-attack_7
+  - first:
+      213: 6730271819936879987
+    second: Turret-attack_8
+  - first:
+      213: -2988119532859791007
+    second: Turret-attack_9
+  - first:
+      213: 6458090513344865076
+    second: Turret-attack_10
+  - first:
+      213: -8829619783918780103
+    second: Turret-attack_11
+  - first:
+      213: -7366678786401386221
+    second: Turret-attack_12
+  - first:
+      213: 8035871261217851138
+    second: Turret-attack_13
+  - first:
+      213: -3248099968902527224
+    second: Turret-attack_14
+  - first:
+      213: 6145168195073862074
+    second: Turret-attack_15
+  - first:
+      213: 8916297550291021564
+    second: Turret-attack_16
+  - first:
+      213: -5299499442657597800
+    second: Turret-attack_17
+  - first:
+      213: -4943798942573396004
+    second: Turret-attack_18
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 150
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Turret-attack_0
+      rect:
+        serializedVersion: 2
+        x: 60
+        y: 495
+        width: 377
+        height: 299
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 20b06ad19484aa340800000000000000
+      internalID: 4875789025449216770
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Turret-attack_2
+      rect:
+        serializedVersion: 2
+        x: 509
+        y: 495
+        width: 374
+        height: 299
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ee3c7d3f08c09f4c0800000000000000
+      internalID: -4253354625088371730
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Turret-attack_3
+      rect:
+        serializedVersion: 2
+        x: 917
+        y: 493
+        width: 415
+        height: 299
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 930e6697b24c84dc0800000000000000
+      internalID: -3654455406611734471
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Turret-attack_4
+      rect:
+        serializedVersion: 2
+        x: 1413
+        y: 493
+        width: 342
+        height: 299
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 23fc5110b72c7d750800000000000000
+      internalID: 6329741634847493938
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Turret-attack_9
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 32
+        width: 374
+        height: 367
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1696c79dd111886d0800000000000000
+      internalID: -2988119532859791007
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Turret-attack_10
+      rect:
+        serializedVersion: 2
+        x: 488
+        y: 47
+        width: 436
+        height: 346
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 433ad3ffa1fbf9950800000000000000
+      internalID: 6458090513344865076
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Turret-attack_11
+      rect:
+        serializedVersion: 2
+        x: 933
+        y: 21
+        width: 400
+        height: 376
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 93182cd7693e67580800000000000000
+      internalID: -8829619783918780103
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Turret-attack_12
+      rect:
+        serializedVersion: 2
+        x: 1367
+        y: 49
+        width: 385
+        height: 331
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 311c3229cac44c990800000000000000
+      internalID: -7366678786401386221
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Turret-attack_18
+      rect:
+        serializedVersion: 2
+        x: 1453
+        y: 59
+        width: 10
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cdff5fa1e09146bb0800000000000000
+      internalID: -4943798942573396004
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 54d6e596dba29364db3b5dd061249b6a
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Turret-attack_0: 4875789025449216770
+      Turret-attack_1: 3439429451396275059
+      Turret-attack_10: 6458090513344865076
+      Turret-attack_11: -8829619783918780103
+      Turret-attack_12: -7366678786401386221
+      Turret-attack_13: 8035871261217851138
+      Turret-attack_14: -3248099968902527224
+      Turret-attack_15: 6145168195073862074
+      Turret-attack_16: 8916297550291021564
+      Turret-attack_17: -5299499442657597800
+      Turret-attack_18: -4943798942573396004
+      Turret-attack_19: -507905838
+      Turret-attack_2: -4253354625088371730
+      Turret-attack_3: -3654455406611734471
+      Turret-attack_4: 6329741634847493938
+      Turret-attack_5: 9139156869032544288
+      Turret-attack_6: -4980174656093077225
+      Turret-attack_7: 357507665269847818
+      Turret-attack_8: 6730271819936879987
+      Turret-attack_9: -2988119532859791007
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

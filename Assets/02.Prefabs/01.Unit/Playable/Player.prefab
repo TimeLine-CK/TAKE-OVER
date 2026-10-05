@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 1211061532258115228}
   - component: {fileID: 5939614798603993386}
   - component: {fileID: 8731215678841185697}
-  - component: {fileID: 6842733122671192032}
   - component: {fileID: 7530058740164906843}
   - component: {fileID: 6155435083490549874}
   - component: {fileID: 2063728645895938716}
@@ -19,6 +18,9 @@ GameObject:
   - component: {fileID: 4698003367037688723}
   - component: {fileID: 5051198876158449165}
   - component: {fileID: 4135875148481619320}
+  - component: {fileID: 7615738084897074918}
+  - component: {fileID: 9011268746376476482}
+  - component: {fileID: 3949531875220477297}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -36,7 +38,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 20.44, y: 4.1, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -86,19 +88,19 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -1176425011
+  m_SortingLayer: 2
   m_SortingOrder: 10
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 4723107735738678597, guid: 50a5c08b60076164493a6a51519dd515, type: 3}
+  m_Sprite: {fileID: -3612663519414665389, guid: b6e8de6f8ec6b5048a0623859f88d146, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 0.96875, y: 2.1875}
+  m_Size: {x: 1, y: 1.375}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 0
+  m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
 --- !u!50 &8731215678841185697
 Rigidbody2D:
@@ -127,52 +129,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!61 &6842733122671192032
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2195616201656737935}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: -0.00053071976}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 0.96875, y: 2.1875}
-    newSize: {x: 0.96875, y: 2.1875}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 0.96875, y: 2.1885614}
-  m_EdgeRadius: 0
 --- !u!114 &7530058740164906843
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -237,6 +193,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e21d8fdf0476c2940be460c17ea97216, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInputReader
+  pointerCursor: {fileID: 2800000, guid: 6dd1ebbf4e8460744a0c6238769e35ce, type: 3}
 --- !u!114 &4993036054096332541
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -265,6 +222,7 @@ MonoBehaviour:
   maximumFallSpeed: 24
   jumpBufferDuration: 0.08
   coyoteTimeDuration: 0.06
+  ceilingCheckDistance: 0.04
   groundCheckDistance: 0.05
   groundCheckWidthReduction: 0.08
   maximumCornerCorrection: 0.2
@@ -299,11 +257,16 @@ MonoBehaviour:
   collideBoxSize: {x: 1.5, y: 1}
   targetMask:
     serializedVersion: 2
-    m_Bits: 0
-  animator: {fileID: 0}
+    m_Bits: 2048
+  attackDamage: 1
+  uppercutBoxSize: {x: 1.2, y: 1.8}
+  uppercutOffset: {x: 0.5, y: 1}
+  uppercutLaunchVelocity: 18
+  animator: {fileID: 4698003367037688723}
   slashEffectPrefab: {fileID: 2181418731129853739, guid: 3d19280d18685bc448f017f3126c04b1, type: 3}
-  slashEffectOffset: {x: 1.24, y: 0.1}
-  slashEffectScale: 0.36
+  slashEffectOffset: {x: 0.4, y: 0.05}
+  slashEffectScale: 0.62
+  slashEffectPoolSize: 4
 --- !u!114 &4135875148481619320
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -316,3 +279,55 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4529eae60584b3248a5f075849a7fb68, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EchoController
+  maximumRecordingDuration: 3
+  recordingPointCost: 30
+  echoLingerDuration: 2
+  teleportPointCost: 25
+  teleportSearchStep: 0.25
+  teleportSearchHeight: 2
+--- !u!114 &7615738084897074918
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2195616201656737935}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc6af978ea5f5524fa72be823a316123, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TPPointController
+  maximumPoint: 100
+  recoveryPerSecond: 30
+--- !u!114 &9011268746376476482
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2195616201656737935}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8bad8229f4d81f4ab39eca6633cf063, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerCommandController
+  rollSpeed: 14
+  rollDuration: 0.25
+  dashPointCost: 15
+  dashSpeed: 20
+  dashDuration: 0.18
+  uppercutPointCost: 20
+  uppercutDuration: 0.3
+--- !u!114 &3949531875220477297
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2195616201656737935}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0b919ec123a30d49b6ed180a8aef154, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Health
+  maximumHealth: 100

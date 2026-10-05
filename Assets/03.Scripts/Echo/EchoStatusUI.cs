@@ -1,6 +1,6 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-09-16
-/// 기능: 씬에 배치된 UI를 이용해 잔상 슬롯의 선택, 녹화, 저장과 실행 상태를 표시한다.
+/// 스크립트 최종 수정일: 2026-09-29
+/// 기능: 씬에 배치된 UI를 이용해 TP와 단일 잔상의 녹화, 저장, 실행 상태를 표시한다.
 /// </summary>
 
 using System;
@@ -9,16 +9,16 @@ using UnityEngine.UI;
 
 public sealed class EchoStatusUI : MonoBehaviour
 {
-    private static readonly Color EmptyColor = new(0.05f, 0.06f, 0.09f, 0.9f); // 빈 슬롯 색상
-    private static readonly Color OccupiedColor = new(0.12f, 0.2f, 0.42f, 0.95f); // 저장된 슬롯 색상
-    private static readonly Color RecordingColor = new(0.18f, 0.25f, 0.85f, 1f); // 녹화 중인 슬롯 색상
-    private static readonly Color BorderColor = new(0.8f, 0.85f, 0.95f, 1f); // 기본 슬롯 테두리 색상
-    private static readonly Color SelectedColor = new(0.65f, 0.02f, 0.12f, 1f); // 선택된 슬롯 테두리 색상
+    private static readonly Color EmptyColor = new(0.05f, 0.06f, 0.09f, 0.9f);      // 빈 슬롯 색상
+    private static readonly Color OccupiedColor = new(0.12f, 0.2f, 0.42f, 0.95f);   // 저장된 슬롯 색상
+    private static readonly Color RecordingColor = new(0.18f, 0.25f, 0.85f, 1f);    // 녹화 중인 슬롯 색상
+    private static readonly Color BorderColor = new(0.8f, 0.85f, 0.95f, 1f);        // 기본 슬롯 테두리 색상
 
-    public Text stateText; // 현재 잔상 상태를 표시할 텍스트
-    public SlotVisual[] slots; // 씬에 배치된 슬롯 UI 목록
+    public Text stateText;              // 현재 잔상 상태를 표시할 텍스트
+    public Text tpText;                 // 현재 TP Point를 표시할 텍스트
+    public SlotVisual[] slots;          // 씬에 배치된 슬롯 UI 목록
 
-    private EchoController controller; // 표시할 잔상 시스템 상태 제공자
+    private EchoController controller;  // 표시할 잔상 시스템 상태 제공자
 
     /// <summary>
     /// 잔상 시스템을 연결하고 슬롯 표시를 초기화.
@@ -26,6 +26,12 @@ public sealed class EchoStatusUI : MonoBehaviour
     public void Initialize(EchoController source)
     {
         controller = source;
+
+        for (int index = 1; index < slots.Length; index++)
+        {
+            if (slots[index]?.slotObject != null)
+                slots[index].slotObject.SetActive(false);
+        }
     }
 
     /// <summary>
@@ -37,6 +43,7 @@ public sealed class EchoStatusUI : MonoBehaviour
             return;
 
         UpdateStateText();
+        UpdatePointText();
         UpdateSlots();
     }
 
@@ -47,22 +54,43 @@ public sealed class EchoStatusUI : MonoBehaviour
     {
         if (controller.IsRecording)
         {
-            stateText.text = $"RECORDING  {controller.RecordingProgress * 8f:0.0} / 8.0 sec";
+            float duration = controller.RecordingProgress * controller.MaximumRecordingDuration;
+            stateText.text = $"R  RECORD     E  EXECUTE     Q  TELEPORT {duration:0.0} / {controller.MaximumRecordingDuration:0.0} sec";
             return;
         }
 
         if (controller.IsReturning)
         {
-            stateText.text = "RETURNING";
+            stateText.text = "R  RECORD     E  EXECUTE     Q  TELEPORT";
             return;
         }
 
         if (controller.IsPlaybackRunning)
+        {
             stateText.text = "PLAYING";
-        else if (controller.HasUnrecoveredEchoes)
-            stateText.text = "F  RECALL";
+        }
+        else if (controller.IsEchoLingering)
+        {
+            stateText.text = $"ECHO HOLD  {controller.EchoLingerRemaining:0.0} sec";
+        }
+        else if (controller.RecordCount > 0)
+        {
+            stateText.text = "R  RECORD     E  EXECUTE     Q  TELEPORT";
+        }
         else
-            stateText.text = "WHEEL  SELECT     R  RECORD     F  EXECUTE";
+        {
+            stateText.text = "R  RECORD     E  EXECUTE     Q  TELEPORT";
+        }
+
+    }
+
+    /// <summary>
+    /// 현재 TP Point를 최대치와 함께 표시한다.
+    /// </summary>
+    private void UpdatePointText()
+    {
+        if (tpText != null)
+            tpText.text = $"TP  {controller.CurrentTP:0} / {controller.MaximumTP:0}";
     }
 
     /// <summary>
@@ -70,11 +98,6 @@ public sealed class EchoStatusUI : MonoBehaviour
     /// </summary>
     private void UpdateSlots()
     {
-        int selectedIndex = controller.SelectedRecordIndex;
-
-        if (selectedIndex < 0 && controller.IsRecording)
-            selectedIndex = controller.RecordingSlotIndex;
-
         int slotCount = Mathf.Min(slots.Length, controller.RecordCapacity);
 
         for (int index = 0; index < slotCount; index++)
@@ -83,20 +106,16 @@ public sealed class EchoStatusUI : MonoBehaviour
                 && index == controller.RecordingSlotIndex;
             bool isOccupied = index < controller.RecordCount;
 
-            slots[index].border.color = index == selectedIndex
-                ? SelectedColor
-                : BorderColor;
-            slots[index].fill.color = isRecordingSlot
-                ? RecordingColor
-                : isOccupied ? OccupiedColor : EmptyColor;
+            slots[index].border.color = BorderColor;
+            slots[index].fill.color = isRecordingSlot ? RecordingColor: isOccupied ? OccupiedColor : EmptyColor;
         }
     }
 
     [Serializable]
     public sealed class SlotVisual
     {
-        public GameObject slotObject; // 슬롯 전체 오브젝트
-        public Image border; // 슬롯 테두리 이미지
-        public Image fill; // 슬롯 내부 상태 이미지
+        public GameObject slotObject;   // 슬롯 전체 오브젝트
+        public Image border;            // 슬롯 테두리 이미지
+        public Image fill;              // 슬롯 내부 상태 이미지
     }
 }
