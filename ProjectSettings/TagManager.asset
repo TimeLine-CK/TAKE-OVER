@@ -5,7 +5,6 @@ TagManager:
   serializedVersion: 3
   tags:
   - Enemy
-  - Afterimage
   layers:
   - Default
   - TransparentFX
@@ -17,7 +16,7 @@ TagManager:
   - 
   - Player
   - Ground
-  - Afterimage
+  - 
   - Enemy
   - 
   - 

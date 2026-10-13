@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-09-29
+/// 스크립트 최종 수정일: 2026-10-12
 /// 기능: 추적 대상의 이동 방향을 반영하며 데드존과 맵 경계 안에서 카메라를 이동 시킨다.
 /// </summary>
 
@@ -19,11 +19,6 @@ public sealed class CameraFollow2D : MonoBehaviour
     private Camera currentCamera;           // 화면 크기를 계산할 카메라
     private float lookDirection;            // 현재 바라볼 수평 방향
     private float currentLookAhead;         // 현재 적용된 시선 선행 거리
-    private Transform returnTarget;         // 복귀 시 다시 추적할 대상
-    private Vector3 returnStartPosition;    // 카메라 복귀 시작 위치
-    private float returnDuration;           // 카메라 복귀에 사용할 시간
-    private float returnElapsed;            // 카메라 복귀가 진행된 시간
-    private bool isReturning;               // 카메라가 복귀 중인지 여부
 
     /// <summary>
     /// 추적 대상을 찾고 이동 정보에 필요한 참조를 초기화한다.
@@ -49,61 +44,12 @@ public sealed class CameraFollow2D : MonoBehaviour
     }
 
     /// <summary>
-    /// 카메라가 즉시 추적할 대상을 변경.
-    /// </summary>
-    public void SetTarget(Transform newTarget)
-    {
-        if (newTarget == null)
-            return;
-
-        target = newTarget;
-        targetBody = target.GetComponent<Rigidbody2D>();
-        lookDirection = 0f;
-        currentLookAhead = 0f;
-        isReturning = false;
-    }
-
-    /// <summary>
-    /// 지정한 시간 동안 새 대상으로 카메라를 복귀시킨다.
-    /// </summary>
-    public void ReturnToTarget(Transform newTarget, float duration)
-    {
-        if (newTarget == null)
-            return;
-
-        target = newTarget;
-        targetBody = target.GetComponent<Rigidbody2D>();
-        lookDirection = 0f;
-        currentLookAhead = 0f;
-        returnTarget = newTarget;
-        returnStartPosition = transform.position;
-        returnDuration = Mathf.Max(0f, duration);
-        returnElapsed = 0f;
-        isReturning = returnDuration > 0f;
-
-        if (!isReturning)
-            ApplyReturnPosition(1f);
-    }
-
-    /// <summary>
     /// 데드존과 선행 시점을 반영해 카메라 위치를 갱신한다.
     /// </summary>
     private void LateUpdate()
     {
         if (target == null)
             return;
-
-        if (isReturning)
-        {
-            returnElapsed += Time.unscaledDeltaTime;
-            float progress = Mathf.Clamp01(returnElapsed / returnDuration);
-            ApplyReturnPosition(progress);
-
-            if (progress >= 1f)
-                isReturning = false;
-
-            return;
-        }
 
         Vector3 current = transform.position;
         Vector3 desired = current;
@@ -127,16 +73,6 @@ public sealed class CameraFollow2D : MonoBehaviour
 
         float blend = 1f - Mathf.Exp(-followSharpness * Time.unscaledDeltaTime);
         transform.position = ClampToBounds(Vector3.Lerp(current, desired, blend));
-    }
-
-    /// <summary>
-    /// 복귀 진행도에 맞춰 카메라 위치를 보간한다.
-    /// </summary>
-    private void ApplyReturnPosition(float progress)
-    {
-        Vector3 destination = returnTarget.position;
-        destination.z = returnStartPosition.z;
-        transform.position = ClampToBounds(Vector3.Lerp(returnStartPosition, destination, progress));
     }
 
     /// <summary>

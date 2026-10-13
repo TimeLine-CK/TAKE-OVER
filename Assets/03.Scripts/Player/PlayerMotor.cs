@@ -1,6 +1,6 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-09-30
-/// 기능: 플레이어와 잔상의 수평 이동, 점프, 중력, 접지와 모서리 보정을 처리한다.
+/// 스크립트 최종 수정일: 2026-10-13
+/// 기능: 플레이어의 수평 이동, 점프, 구르기, 중력, 접지와 모서리 보정을 처리한다.
 /// </summary>
 
 using System;
@@ -33,8 +33,12 @@ public sealed class PlayerMotor : MonoBehaviour
     [SerializeField] private float jumpBufferDuration = 0.08f;  // 선입력 허용 시간
     [SerializeField] private float coyoteTimeDuration = 0.06f;  // 낭떠러지 점프 허용 시간
 
-    [Header("Action Movement")]
-    [Min(0f)] public float ceilingCheckDistance = 0.04f;        // 상승 중 천장 확인 거리
+    [Header("Roll")]
+    [SerializeField] private float rollSpeed = 14f;             // 구르기 이동 속도
+    [SerializeField] private float rollDuration = 0.25f;        // 구르기 유지 시간
+
+    [Header("Ceiling Check")]
+    [SerializeField] private float ceilingCheckDistance = 0.04f; // 상승 중 천장 확인 거리
 
     [Header("Ground Check")]
     [SerializeField] private float groundCheckDistance = 0.05f;         // 바닥 탐지 거리
@@ -48,12 +52,11 @@ public sealed class PlayerMotor : MonoBehaviour
     public bool IsGrounded => isGrounded;                                       // 현재 접지 여부
     public int FacingDirection => facingDirection;                              // 현재 바라보는 수평 방향
     public Vector2 Velocity => new(body.linearVelocity.x, verticalVelocity);    // 현재 이동 속도
-    public LayerMask GroundMask => groundMask;                                  // 바닥 판정에 사용하는 레이어
-    public bool IsCommandActive => commandActive && actionRemaining > 0f;       // 돌진 또는 올려치기 진행 여부
 
     private Rigidbody2D body;                                                   // 물리 이동을 적용할 리지드바디
     private Collider2D bodyCollider;                                            // 접지와 충돌 검사에 사용할 콜라이더
     private PlayerInputReader inputReader;                                      // 플레이어 입력을 제공하는 컴포넌트
+    private PlayerAnimator playerAnimator;                                      // 구르기 애니메이션을 실행할 컴포넌트
     private readonly RaycastHit2D[] groundHits = new RaycastHit2D[4];           // 접지 검사 결과 버퍼
     private readonly RaycastHit2D[] ceilingHits = new RaycastHit2D[4];          // 천장 검사 결과 버퍼
     private ContactFilter2D groundFilter;                                       // 바닥 레이어만 검사하는 필터
@@ -65,12 +68,10 @@ public sealed class PlayerMotor : MonoBehaviour
 
     private float jumpBufferRemaining;                                          // 남아 있는 점프 선입력 시간
     private float coyoteTimeRemaining;                                          // 남아 있는 코요테 타임
-    private float speedMultiplier = 1f;                                         // 이동 속도 배율
     private float verticalVelocity;                                             // 직접 계산하는 수직 속도
-    private bool jumpedThisPhysicsTick;                                         // 현재 물리 틱에서 점프했는지 여부
-    private float actionRemaining;                                              // 구르기 또는 커맨드 이동 남은 시간
-    private float actionHorizontalVelocity;                                     // 행동 중 유지할 수평 속도
-    private bool commandActive;                                                 // 현재 행동이 TP 커맨드인지 여부
+    private bool hasJumpedThisPhysicsTick;                                      // 현재 물리 틱에서 점프했는지 여부
+    private float rollRemaining;                                                // 구르기 남은 시간
+    private float rollHorizontalVelocity;                                       // 구르기 중 유지할 수평 속도
 
     /// <summary>
     /// 컴포넌트와 접지 필터, 시각 요소의 기본 상태를 초기화.
@@ -80,6 +81,7 @@ public sealed class PlayerMotor : MonoBehaviour
         body = GetComponent<Rigidbody2D>();
         bodyCollider = GetComponent<Collider2D>();
         inputReader = GetComponent<PlayerInputReader>();
+        playerAnimator = GetComponentInChildren<PlayerAnimator>();
 
         body.freezeRotation = true;
         body.gravityScale = 0f;
@@ -104,6 +106,22 @@ public sealed class PlayerMotor : MonoBehaviour
     }
 
     /// <summary>
+    /// 부활할 때 남아 있는 이동 속도와 점프 및 구르기 상태를 초기화한다.
+    /// </summary>
+    public void ResetMovement()
+    {
+        body.linearVelocity = Vector2.zero;
+        body.angularVelocity = 0f;
+        verticalVelocity = 0f;
+        jumpBufferRemaining = 0f;
+        coyoteTimeRemaining = 0f;
+        rollRemaining = 0f;
+        rollHorizontalVelocity = 0f;
+        hasJumpedThisPhysicsTick = false;
+        isGrounded = false;
+    }
+
+    /// <summary>
     /// 현재 입력을 고정 물리 간격으로 이동 계산에 전달한다.
     /// </summary>
     private void FixedUpdate()
@@ -118,20 +136,23 @@ public sealed class PlayerMotor : MonoBehaviour
     /// <summary>
     /// 전달받은 입력과 시간 간격을 사용해 한 번의 이동 물리를 계산.
     /// </summary>
-    public void SimulateInput(Vector2 move, bool jumpPressed, float deltaTime)
+    private void SimulateInput(Vector2 move, bool isJumpPressed, float deltaTime)
     {
-        jumpedThisPhysicsTick = false;
+        hasJumpedThisPhysicsTick = false;
         float horizontalInput = move.x;
 
         UpdateGroundState(deltaTime);
-        UpdateJumpBuffer(jumpPressed, deltaTime);
+        UpdateJumpBuffer(isJumpPressed, deltaTime);
+
+        if (inputReader.ConsumeRollPressed())
+            TryRoll(horizontalInput);
 
         Vector2 velocity = body.linearVelocity;
         velocity.y = verticalVelocity;
 
-        if (actionRemaining > 0f)
+        if (rollRemaining > 0f)
         {
-            velocity.x = actionHorizontalVelocity;
+            velocity.x = rollHorizontalVelocity;
         }
         else
         {
@@ -148,89 +169,24 @@ public sealed class PlayerMotor : MonoBehaviour
         ApplyCornerCorrection(velocity, deltaTime);
 
         body.linearVelocity = velocity;
-        UpdateAction(deltaTime);
+        UpdateRoll(deltaTime);
     }
 
     /// <summary>
     /// 지상에서 지정한 방향으로 구르기를 시작한다.
     /// </summary>
-    public bool TryRoll(int direction, float speed, float duration)
+    private void TryRoll(float horizontalInput)
     {
-        if (!isGrounded || actionRemaining > 0f)
-        {
-            return false;
-        }
-            
+        if (!isGrounded || rollRemaining > 0f)
+            return;
 
-        StartHorizontalAction(direction, speed, duration, false);
-        return true;
-    }
-
-    /// <summary>
-    /// 지정한 방향으로 TP 돌진을 시작한다.
-    /// </summary>
-    public bool TryDash(int direction, float speed, float duration)
-    {
-        if (actionRemaining > 0f)
-        {
-            return false;
-        }
-            
-
-        verticalVelocity = 0f;
-        StartHorizontalAction(direction, speed, duration, true);
-        return true;
-    }
-
-    /// <summary>
-    /// 최대 이동 속도에 적용할 배율을 설정.
-    /// </summary>
-    public void SetSpeedMultiplier(float multiplier)
-    {
-        speedMultiplier = Mathf.Max(0f, multiplier);
-    }
-
-    /// <summary>
-    /// 현재 위치와 이동 상태를 복구 가능한 값으로 저장.
-    /// </summary>
-    public MotorSnapshot CaptureSnapshot()
-    {
-        return new MotorSnapshot(
-            body.position,
-            Velocity,
-            isGrounded,
-            facingDirection,
-            jumpBufferRemaining,
-            coyoteTimeRemaining
-        );
-    }
-
-    /// <summary>
-    /// 저장된 이동 상태와 방향을 현재 플레이어에 복구한다.
-    /// </summary>
-    public void RestoreSnapshot(MotorSnapshot snapshot)
-    {
-        float currentMaximumSpeed = maximumSpeed * speedMultiplier;
-
-        Vector2 restoredVelocity = snapshot.Velocity;
-        restoredVelocity.x = Mathf.Clamp(
-            restoredVelocity.x,
-            -currentMaximumSpeed,
-            currentMaximumSpeed
-        );
-
-        body.position = snapshot.Position;
-        verticalVelocity = restoredVelocity.y;
-        body.linearVelocity = restoredVelocity;
-
-        isGrounded = snapshot.IsGrounded;
-        facingDirection = snapshot.FacingDirection;
-        jumpBufferRemaining = 0f;
-        coyoteTimeRemaining = snapshot.CoyoteTimeRemaining;
-        actionRemaining = 0f;
-        commandActive = false;
-
+        facingDirection = Mathf.Abs(horizontalInput) > 0.01f
+            ? (int)Mathf.Sign(horizontalInput)
+            : facingDirection;
+        rollHorizontalVelocity = facingDirection * Mathf.Max(0f, rollSpeed);
+        rollRemaining = Mathf.Max(0.01f, rollDuration);
         ApplyVisualFacing();
+        playerAnimator?.PlayRoll();
     }
 
     /// <summary>
@@ -245,19 +201,19 @@ public sealed class PlayerMotor : MonoBehaviour
             groundHits,
             groundCheckDistance
         );
-        bool detectedGround = false;
+        bool isGroundDetected = false;
         for (int index = 0; index < hitCount; index++)
         {
             if (groundHits[index].normal.y > 0.5f)
             {
-                detectedGround = true;
+                isGroundDetected = true;
                 break;
             }
         }
 
         if (verticalVelocity > 0f)
         {
-            detectedGround = false;
+            isGroundDetected = false;
         }
             
 
@@ -267,7 +223,7 @@ public sealed class PlayerMotor : MonoBehaviour
         }
             
 
-        isGrounded = detectedGround;
+        isGrounded = isGroundDetected;
 
         if (isGrounded)
         {
@@ -292,9 +248,9 @@ public sealed class PlayerMotor : MonoBehaviour
     /// <summary>
     /// 점프 입력을 버퍼에 저장하거나 남은 시간을 감소시킨다.
     /// </summary>
-    private void UpdateJumpBuffer(bool jumpPressed, float deltaTime)
+    private void UpdateJumpBuffer(bool isJumpPressed, float deltaTime)
     {
-        if (jumpPressed)
+        if (isJumpPressed)
         {
             jumpBufferRemaining = jumpBufferDuration;
             return;
@@ -307,60 +263,14 @@ public sealed class PlayerMotor : MonoBehaviour
     }
 
     /// <summary>
-    /// 행동 이동 시간을 줄이고 종료 시 커맨드 상태를 해제한다.
+    /// 남은 구르기 시간을 감소시킨다.
     /// </summary>
-    private void UpdateAction(float deltaTime)
+    private void UpdateRoll(float deltaTime)
     {
-        if (actionRemaining <= 0f)
-        {
+        if (rollRemaining <= 0f)
             return;
-        }
-            
-        actionRemaining = Mathf.Max(0f, actionRemaining - deltaTime);
-        if (actionRemaining <= 0f)
-        {
-            commandActive = false;
-        }
-            
-    }
 
-    /// <summary>
-    /// 지정한 방향과 속도로 일정 시간 유지되는 수평 행동을 시작한다.
-    /// </summary>
-    private void StartHorizontalAction(
-        int direction,
-        float speed,
-        float duration,
-        bool isCommand
-    )
-    {
-        facingDirection = direction < 0 ? -1 : 1;
-        actionHorizontalVelocity = facingDirection * Mathf.Max(0f, speed);
-        actionRemaining = Mathf.Max(0.01f, duration);
-        commandActive = isCommand;
-        ApplyVisualFacing();
-    }
-
-    /// <summary>
-    /// 지정한 위치에 플레이어 콜라이더가 들어갈 수 있는지 확인한다.
-    /// </summary>
-    public bool CanOccupy(Vector2 position)
-    {
-        return !OverlapsGround(position);
-    }
-
-    /// <summary>
-    /// 플레이어를 지정한 위치로 이동시키고 남아 있는 이동 상태를 초기화한다.
-    /// </summary>
-    public void Teleport(Vector2 position)
-    {
-        body.position = position;
-        body.linearVelocity = Vector2.zero;
-        verticalVelocity = 0f;
-        actionRemaining = 0f;
-        commandActive = false;
-        jumpBufferRemaining = 0f;
-        coyoteTimeRemaining = 0f;
+        rollRemaining = Mathf.Max(0f, rollRemaining - deltaTime);
     }
 
     /// <summary>
@@ -403,16 +313,12 @@ public sealed class PlayerMotor : MonoBehaviour
     {
         horizontalInput = Mathf.Clamp(horizontalInput, -1f, 1f);
 
-        float targetSpeed =
-            horizontalInput * maximumSpeed * speedMultiplier;
+        float targetSpeed = horizontalInput * maximumSpeed;
 
         float acceleration = GetHorizontalAcceleration(
             velocity.x,
             horizontalInput
         );
-
-        // 최고속도 배율이 바뀌어도 가속·제동 시간은 유지한다.
-        acceleration *= speedMultiplier;
 
         velocity.x = Mathf.MoveTowards(
             velocity.x,
@@ -437,11 +343,11 @@ public sealed class PlayerMotor : MonoBehaviour
             }
                 
 
-            bool reversing =
+            bool isReversing =
                 !Mathf.Approximately(currentSpeed, 0f) &&
                 Mathf.Sign(currentSpeed) != Mathf.Sign(horizontalInput);
 
-            return reversing
+            return isReversing
                 ? groundReverseAcceleration
                 : groundAcceleration;
         }
@@ -473,7 +379,7 @@ public sealed class PlayerMotor : MonoBehaviour
         jumpBufferRemaining = 0f;
         coyoteTimeRemaining = 0f;
         isGrounded = false;
-        jumpedThisPhysicsTick = true;
+        hasJumpedThisPhysicsTick = true;
         Jumped?.Invoke();
 
         return true;
@@ -552,7 +458,7 @@ public sealed class PlayerMotor : MonoBehaviour
 
         StopRisingFromCollision(collision);
 
-        if (actionRemaining > 0f || jumpedThisPhysicsTick || jumpBufferRemaining <= 0f)
+        if (rollRemaining > 0f || hasJumpedThisPhysicsTick || jumpBufferRemaining <= 0f)
         {
             return;
         }
@@ -573,7 +479,7 @@ public sealed class PlayerMotor : MonoBehaviour
             jumpBufferRemaining = 0f;
             coyoteTimeRemaining = 0f;
             isGrounded = false;
-            jumpedThisPhysicsTick = true;
+            hasJumpedThisPhysicsTick = true;
             Jumped?.Invoke();
             return;
         }
@@ -785,33 +691,4 @@ public sealed class PlayerMotor : MonoBehaviour
     }
 #endif
 
-    public readonly struct MotorSnapshot
-    {
-        public Vector2 Position { get; } // 저장된 위치
-        public Vector2 Velocity { get; } // 저장된 이동 속도
-        public bool IsGrounded { get; } // 저장된 접지 여부
-        public int FacingDirection { get; } // 저장된 시선 방향
-        public float JumpBufferRemaining { get; } // 저장된 점프 버퍼 시간
-        public float CoyoteTimeRemaining { get; } // 저장된 코요테 타임
-
-        /// <summary>
-        /// 복구에 필요한 플레이어 이동 상태를 저장한다.
-        /// </summary>
-        public MotorSnapshot(
-            Vector2 position,
-            Vector2 velocity,
-            bool isGrounded,
-            int facingDirection,
-            float jumpBufferRemaining,
-            float coyoteTimeRemaining
-        )
-        {
-            Position = position;
-            Velocity = velocity;
-            IsGrounded = isGrounded;
-            FacingDirection = facingDirection;
-            JumpBufferRemaining = jumpBufferRemaining;
-            CoyoteTimeRemaining = coyoteTimeRemaining;
-        }
-    }
 }

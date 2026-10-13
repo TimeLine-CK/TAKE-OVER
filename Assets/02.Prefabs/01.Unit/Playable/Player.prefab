@@ -17,9 +17,6 @@ GameObject:
   - component: {fileID: 4993036054096332541}
   - component: {fileID: 4698003367037688723}
   - component: {fileID: 5051198876158449165}
-  - component: {fileID: 4135875148481619320}
-  - component: {fileID: 7615738084897074918}
-  - component: {fileID: 9011268746376476482}
   - component: {fileID: 3949531875220477297}
   m_Layer: 8
   m_Name: Player
@@ -222,6 +219,8 @@ MonoBehaviour:
   maximumFallSpeed: 24
   jumpBufferDuration: 0.08
   coyoteTimeDuration: 0.06
+  rollSpeed: 14
+  rollDuration: 0.25
   ceilingCheckDistance: 0.04
   groundCheckDistance: 0.05
   groundCheckWidthReduction: 0.08
@@ -258,66 +257,12 @@ MonoBehaviour:
   targetMask:
     serializedVersion: 2
     m_Bits: 2048
-  attackDamage: 1
-  uppercutBoxSize: {x: 1.2, y: 1.8}
-  uppercutOffset: {x: 0.5, y: 1}
-  uppercutLaunchVelocity: 18
+  AttackDamage: 1
   animator: {fileID: 4698003367037688723}
   slashEffectPrefab: {fileID: 2181418731129853739, guid: 3d19280d18685bc448f017f3126c04b1, type: 3}
   slashEffectOffset: {x: 0.4, y: 0.05}
   slashEffectScale: 0.62
   slashEffectPoolSize: 4
---- !u!114 &4135875148481619320
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2195616201656737935}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4529eae60584b3248a5f075849a7fb68, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EchoController
-  maximumRecordingDuration: 3
-  recordingPointCost: 30
-  echoLingerDuration: 2
-  teleportPointCost: 25
-  teleportSearchStep: 0.25
-  teleportSearchHeight: 2
---- !u!114 &7615738084897074918
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2195616201656737935}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bc6af978ea5f5524fa72be823a316123, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TPPointController
-  maximumPoint: 100
-  recoveryPerSecond: 30
---- !u!114 &9011268746376476482
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2195616201656737935}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f8bad8229f4d81f4ab39eca6633cf063, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerCommandController
-  rollSpeed: 14
-  rollDuration: 0.25
-  dashPointCost: 15
-  dashSpeed: 20
-  dashDuration: 0.18
-  uppercutPointCost: 20
-  uppercutDuration: 0.3
 --- !u!114 &3949531875220477297
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -330,4 +275,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b0b919ec123a30d49b6ed180a8aef154, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
-  maximumHealth: 100
+  MaximumHealth: 100

@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-09-29
+/// 스크립트 최종 수정일: 2026-10-12
 /// 기능: 플레이어의 이동과 점프 상태를 Animator 파라미터와 공격 및 구르기 트리거에 반영한다.
 /// </summary>
 
@@ -74,46 +74,4 @@ public class PlayerAnimator : MonoBehaviour
         animator.SetTrigger(rollHash);
     }
 
-    /// <summary>
-    /// 현재 애니메이션 상태와 재생 위치를 저장.
-    /// </summary>
-    public AnimationSnapshot CaptureSnapshot()
-    {
-        AnimatorStateInfo state = animator.GetCurrentAnimatorStateInfo(0);
-        return new AnimationSnapshot(state.fullPathHash, state.normalizedTime);
-    }
-
-    /// <summary>
-    /// 저장된 애니메이션 상태와 재생 위치를 복구.
-    /// </summary>
-    public void RestoreSnapshot(AnimationSnapshot snapshot)
-    {
-        animator.ResetTrigger(attackHash);
-        animator.ResetTrigger(rollHash);
-        animator.Play(snapshot.StateHash, 0, snapshot.NormalizedTime);
-        animator.Update(0f);
-    }
-
-    /// <summary>
-    /// Animator의 전체 재생 속도를 설정.
-    /// </summary>
-    public void SetPlaybackSpeed(float speed)
-    {
-        animator.speed = speed;
-    }
-
-    public readonly struct AnimationSnapshot
-    {
-        public int StateHash { get; } // 저장된 Animator 상태 해시
-        public float NormalizedTime { get; } // 저장된 애니메이션 재생 위치
-
-        /// <summary>
-        /// 복구에 필요한 애니메이션 상태와 재생 위치를 저장한다.
-        /// </summary>
-        public AnimationSnapshot(int stateHash, float normalizedTime)
-        {
-            StateHash = stateHash;
-            NormalizedTime = normalizedTime;
-        }
-    }
 }

@@ -1,11 +1,12 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-09-29
+/// 스크립트 최종 수정일: 2026-10-12
 /// 기능: 공격 순간의 카메라 흔들림과 URP 후처리 펄스를 접근성 설정에 맞춰 재생한다.
 /// </summary>
 
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.Serialization;
 
 [DisallowMultipleComponent]
 public sealed class CombatVfxFeedback : MonoBehaviour
@@ -18,9 +19,12 @@ public sealed class CombatVfxFeedback : MonoBehaviour
     [SerializeField, Range(-0.2f, 0.2f)] private float exposure = 0.04f;         // 노출 변화량
     [SerializeField, Range(0f, 0.1f)] private float chromaticIntensity = 0.025f;// 색수차 최대 강도
     [Header("Accessibility")]
-    [SerializeField] private bool screenShake = true;                           // 카메라 흔들림 사용 여부
-    [SerializeField] private bool postProcessing = true;                        // 후처리 펄스 사용 여부
-    [SerializeField] private bool chromaticAberration = false;                  // 색수차 사용 여부
+    [FormerlySerializedAs("screenShake")]
+    [SerializeField] private bool useScreenShake = true;                        // 카메라 흔들림 사용 여부
+    [FormerlySerializedAs("postProcessing")]
+    [SerializeField] private bool usePostProcessing = true;                     // 후처리 펄스 사용 여부
+    [FormerlySerializedAs("chromaticAberration")]
+    [SerializeField] private bool useChromaticAberration;                       // 색수차 사용 여부
 
     private Volume volume;                                                      // 공격 전용 런타임 Volume
     private VolumeProfile profile;                                              // 공격 전용 런타임 프로필
@@ -32,7 +36,7 @@ public sealed class CombatVfxFeedback : MonoBehaviour
     private float strength;                                                     // 현재 화면 충격 세기
     private Vector2 direction;                                                  // 공격 방향
     private Vector3 cameraPosition;                                             // 렌더링 전 카메라 위치
-    private bool shakeApplied;                                                  // 현재 렌더링에 흔들림 적용 여부
+    private bool isShakeApplied;                                                // 현재 렌더링에 흔들림 적용 여부
 
     /// <summary>
     /// 대상 카메라와 공격 전용 후처리 Volume을 준비한다.
@@ -96,9 +100,9 @@ public sealed class CombatVfxFeedback : MonoBehaviour
 
         float progress = 1f - remaining / duration;
         float envelope = strength * (1f - progress) * (1f - progress);
-        volume.weight = postProcessing ? envelope : 0f;
+        volume.weight = usePostProcessing ? envelope : 0f;
 
-        if (!screenShake || maximumShakePixels <= 0f)
+        if (!useScreenShake || maximumShakePixels <= 0f)
         {
             return;
         }
@@ -117,7 +121,7 @@ public sealed class CombatVfxFeedback : MonoBehaviour
 
         cameraPosition = camera.transform.position;
         camera.transform.position += (Vector3)offset;
-        shakeApplied = true;
+        isShakeApplied = true;
     }
 
     /// <summary>
@@ -130,10 +134,10 @@ public sealed class CombatVfxFeedback : MonoBehaviour
             return;
         }
 
-        if (shakeApplied)
+        if (isShakeApplied)
         {
             camera.transform.position = cameraPosition;
-            shakeApplied = false;
+            isShakeApplied = false;
         }
 
         if (volume != null)
@@ -176,7 +180,7 @@ public sealed class CombatVfxFeedback : MonoBehaviour
 
         chromatic = profile.Add<ChromaticAberration>();
         chromatic.intensity.Override(chromaticIntensity);
-        chromatic.active = chromaticAberration;
+        chromatic.active = useChromaticAberration;
     }
 
     /// <summary>
@@ -187,10 +191,10 @@ public sealed class CombatVfxFeedback : MonoBehaviour
         RenderPipelineManager.beginCameraRendering -= BeginCameraRendering;
         RenderPipelineManager.endCameraRendering -= EndCameraRendering;
 
-        if (shakeApplied && targetCamera != null)
+        if (isShakeApplied && targetCamera != null)
         {
             targetCamera.transform.position = cameraPosition;
-            shakeApplied = false;
+            isShakeApplied = false;
         }
 
         if (volume != null)

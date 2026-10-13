@@ -213,15 +213,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc8c7e88be3449141aa70ff2e38505c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TurretController
-  muzzlePoint: {fileID: 671683804563834667}
-  projectilePrefab: {fileID: 7392691073429170655, guid: 2794fe49f231904419fbac1ecf1de5d5, type: 3}
-  detectionRange: 10
-  trackingDuration: 1.2
-  lockedAimDuration: 0.35
-  projectileSpeed: 12
-  projectileDamage: 20
-  projectileLifetime: 4
-  deathDuration: 0.7
+  MuzzlePoint: {fileID: 671683804563834667}
+  ProjectilePrefab: {fileID: 7392691073429170655, guid: 2794fe49f231904419fbac1ecf1de5d5, type: 3}
+  DetectionRange: 10
+  TrackingDuration: 0.6
+  LockedAimDuration: 0.2
+  ProjectileSpeed: 18
+  ProjectileDamage: 25
+  ProjectileLifetime: 4
+  DeathDuration: 0.7
 --- !u!95 &5694101949031683683
 Animator:
   serializedVersion: 7
@@ -256,4 +256,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b0b919ec123a30d49b6ed180a8aef154, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
-  maximumHealth: 1
+  MaximumHealth: 1

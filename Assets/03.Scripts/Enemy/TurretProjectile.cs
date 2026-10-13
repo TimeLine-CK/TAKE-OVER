@@ -10,12 +10,12 @@ public sealed class TurretProjectile : MonoBehaviour
 {
     private Vector2 direction; // 투사체 이동 방향
     private float speed;       // 투사체 이동 속도
-    private float damage;      // 플레이어에게 적용할 피해량
+    private int damage;      // 플레이어에게 적용할 피해량
 
     /// <summary>
     /// 투사체 이동과 피해 수치를 설정한다.
     /// </summary>
-    public void Initialize(Vector2 moveDirection, float moveSpeed, float hitDamage, float lifetime)
+    public void Initialize(Vector2 moveDirection, float moveSpeed, int hitDamage, float lifetime)
     {
         direction = moveDirection.normalized;
         speed = moveSpeed;

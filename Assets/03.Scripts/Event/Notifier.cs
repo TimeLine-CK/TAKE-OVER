@@ -8,10 +8,10 @@ public class Notifier : MonoBehaviour
     public int IntValue;
 
     public Action EventAction;
-    public Action RenderEvnetAction;
+    public Action RenderEventAction;
 
     public void SetEvent(Action eventAction) => EventAction = eventAction;
-    public void SetRenderEvent(Action renderEvnetAction) => EventAction = renderEvnetAction;
+    public void SetRenderEvent(Action renderEventAction) => EventAction = renderEventAction;
     public void InvokeEvent() => EventAction?.Invoke();
-    public void InvokeRenderEvent() => RenderEvnetAction?.Invoke();
+    public void InvokeRenderEvent() => RenderEventAction?.Invoke();
 }

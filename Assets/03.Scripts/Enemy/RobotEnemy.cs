@@ -1,9 +1,10 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-09-30
+/// 스크립트 최종 수정일: 2026-10-12
 /// 기능: 인간형 로봇의 대기, 추적, 공격과 사망 상태를 처리한다.
 /// </summary>
 
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class RobotEnemy : MonoBehaviour
 {
@@ -15,18 +16,26 @@ public class RobotEnemy : MonoBehaviour
     private enum RobotState { Idle, Run, Attack, Dead }
 
     [Header("Detection")]
-    public float detectionRange = 7f;          // 플레이어 감지 거리
-    public float attackRange = 1.4f;           // 공격 시작 거리
+    [FormerlySerializedAs("detectionRange")]
+    public float DetectionRange = 7f;          // 플레이어 감지 거리
+    [FormerlySerializedAs("attackRange")]
+    public float AttackRange = 1.4f;           // 공격 시작 거리
 
     [Header("Movement")]
-    public float moveSpeed = 3f;               // 추적 이동 속도
+    [FormerlySerializedAs("moveSpeed")]
+    public float MoveSpeed = 3f;               // 추적 이동 속도
 
     [Header("Combat")]
-    public float attackDamage = 15f;                    // 공격 피해량
-    public float attackInterval = 1.2f;                 // 공격 사이의 대기 시간
-    [Min(0f)] public float attackWindup = 0.25f;        // 공격 시작부터 피해 판정까지의 시간
-    [Min(0f)] public float attackHeight = 1.2f;         // 공격 가능한 대상과의 높이 차이
-    public float deathDuration = 0.8f;                  // 사망 표시 유지 시간
+    [FormerlySerializedAs("attackDamage")]
+    public int AttackDamage = 15;                       // 공격 피해량
+    [FormerlySerializedAs("attackInterval")]
+    public float AttackInterval = 1.2f;                 // 공격 사이의 대기 시간
+    [FormerlySerializedAs("attackWindup")]
+    [Min(0f)] public float AttackWindup = 0.25f;        // 공격 시작부터 피해 판정까지의 시간
+    [FormerlySerializedAs("attackHeight")]
+    [Min(0f)] public float AttackHeight = 1.2f;         // 공격 가능한 대상과의 높이 차이
+    [FormerlySerializedAs("deathDuration")]
+    public float DeathDuration = 0.8f;                  // 사망 표시 유지 시간
 
     private Rigidbody2D body;                           // 로봇 이동 리지드바디
     private Collider2D bodyCollider;                    // 사망 시 비활성화할 콜라이더
@@ -38,7 +47,7 @@ public class RobotEnemy : MonoBehaviour
     private RobotState state = (RobotState)(-1);        // 현재 로봇 상태
     private float nextAttackTime;                       // 다음 공격 가능 시간
     private float attackHitTime;                        // 현재 공격의 피해 판정 시각
-    private bool attackPending;                        // 피해 판정 대기 여부
+    private bool isAttackPending;                      // 피해 판정 대기 여부
     private float attackDirection;                     // 공격 시작 당시 바라본 방향
 
     /// <summary>
@@ -84,41 +93,41 @@ public class RobotEnemy : MonoBehaviour
 
         float distance = Mathf.Abs(player.position.x - transform.position.x);
 
-        if (attackPending)
+        if (isAttackPending)
         {
             body.linearVelocity = new Vector2(0f, body.linearVelocity.y);
             if (Time.time >= attackHitTime)
             {
-                attackPending = false;
+                isAttackPending = false;
                 float horizontalOffset = player.position.x - transform.position.x;
-                if (distance <= attackRange
-                    && Mathf.Abs(player.position.y - transform.position.y) <= attackHeight
+                if (distance <= AttackRange
+                    && Mathf.Abs(player.position.y - transform.position.y) <= AttackHeight
                     && horizontalOffset * attackDirection >= 0f)
                 {
-                    playerHealth?.TakeDamage(attackDamage);
+                    playerHealth?.TakeDamage(AttackDamage);
                 }
             }
             return;
         }
 
-        if (distance > detectionRange)
+        if (distance > DetectionRange)
         {
             body.linearVelocity = new Vector2(0f, body.linearVelocity.y);
             SetState(RobotState.Idle);
             return;
         }
 
-        if (distance > attackRange)
+        if (distance > AttackRange)
         {
             float direction = Mathf.Sign(player.position.x - transform.position.x);
-            body.linearVelocity = new Vector2(direction * moveSpeed, body.linearVelocity.y);
+            body.linearVelocity = new Vector2(direction * MoveSpeed, body.linearVelocity.y);
             SetFacingDirection(direction);
             SetState(RobotState.Run);
             return;
         }
 
         body.linearVelocity = new Vector2(0f, body.linearVelocity.y);
-        if (Mathf.Abs(player.position.y - transform.position.y) > attackHeight)
+        if (Mathf.Abs(player.position.y - transform.position.y) > AttackHeight)
         {
             SetState(RobotState.Idle);
             return;
@@ -128,10 +137,10 @@ public class RobotEnemy : MonoBehaviour
 
         if (Time.time >= nextAttackTime)
         {
-            nextAttackTime = Time.time + Mathf.Max(attackInterval, attackWindup);
-            attackHitTime = Time.time + attackWindup;
+            nextAttackTime = Time.time + Mathf.Max(AttackInterval, AttackWindup);
+            attackHitTime = Time.time + AttackWindup;
             attackDirection = player.position.x >= transform.position.x ? 1f : -1f;
-            attackPending = true;
+            isAttackPending = true;
             PlayAnimation(attackStateHash);
         }
     }
@@ -141,12 +150,12 @@ public class RobotEnemy : MonoBehaviour
     /// </summary>
     private void Die()
     {
-        attackPending = false;
+        isAttackPending = false;
         SetState(RobotState.Dead);
         body.linearVelocity = Vector2.zero;
         body.simulated = false;
         bodyCollider.enabled = false;
-        Destroy(gameObject, deathDuration);
+        Destroy(gameObject, DeathDuration);
     }
 
     /// <summary>

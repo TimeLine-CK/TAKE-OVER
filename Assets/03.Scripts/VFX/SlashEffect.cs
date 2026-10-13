@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-09-29
+/// 스크립트 최종 수정일: 2026-10-12
 /// 기능: 조준 방향으로 짧게 뻗는 칼날 잔상과 색 분리 잔선을 메시로 생성하고 풀로 반환한다.
 /// </summary>
 
@@ -21,13 +21,13 @@ public sealed class SlashEffect : MonoBehaviour
 
     public bool IsPlaying { get; private set; }                                 // 현재 이펙트 재생 여부
 
-    private static readonly int ProgressId = Shader.PropertyToID("_Progress");
-    private static readonly int EffectAgeId = Shader.PropertyToID("_EffectAge");
-    private static readonly int EmissionId = Shader.PropertyToID("_Emission");
-    private static readonly int SeedId = Shader.PropertyToID("_Seed");
-    private static readonly int BodyColorId = Shader.PropertyToID("_BodyColor");
-    private static readonly int BladeColorId = Shader.PropertyToID("_BladeColor");
-    private static readonly int EdgeColorId = Shader.PropertyToID("_EdgeColor");
+    private static readonly int progressId = Shader.PropertyToID("_Progress");
+    private static readonly int effectAgeId = Shader.PropertyToID("_EffectAge");
+    private static readonly int emissionId = Shader.PropertyToID("_Emission");
+    private static readonly int seedId = Shader.PropertyToID("_Seed");
+    private static readonly int bodyColorId = Shader.PropertyToID("_BodyColor");
+    private static readonly int bladeColorId = Shader.PropertyToID("_BladeColor");
+    private static readonly int edgeColorId = Shader.PropertyToID("_EdgeColor");
     private static int playSequence;
 
     private readonly List<Vector3> vertices = new(512);                          // 재사용할 메시 정점 목록
@@ -198,13 +198,13 @@ public sealed class SlashEffect : MonoBehaviour
         mesh.RecalculateBounds();
 
         properties.Clear();
-        properties.SetFloat(ProgressId, progress);
-        properties.SetFloat(EffectAgeId, age);
-        properties.SetFloat(EmissionId, emission);
-        properties.SetFloat(SeedId, seed);
-        properties.SetColor(BodyColorId, bodyColor);
-        properties.SetColor(BladeColorId, bladeColor);
-        properties.SetColor(EdgeColorId, edgeColor);
+        properties.SetFloat(progressId, progress);
+        properties.SetFloat(effectAgeId, age);
+        properties.SetFloat(emissionId, emission);
+        properties.SetFloat(seedId, seed);
+        properties.SetColor(bodyColorId, bodyColor);
+        properties.SetColor(bladeColorId, bladeColor);
+        properties.SetColor(edgeColorId, edgeColor);
         meshRenderer.SetPropertyBlock(properties);
     }
 

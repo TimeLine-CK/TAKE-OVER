@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-01
+/// 스크립트 최종 수정일: 2026-10-12
 /// 기능: 범위 안의 플레이어를 감지한 뒤 회전하지 않고 포구 방향으로 투사체를 발사한다.
 /// </summary>
 
@@ -14,19 +14,28 @@ public sealed class TurretController : MonoBehaviour
 
     [Header("References")]
     [FormerlySerializedAs("aimPivot")]
-    public Transform muzzlePoint;       // 탄환이 생성되는 총구 위치와 방향
-    public GameObject projectilePrefab; // 발사할 탄환 프리팹
+    [FormerlySerializedAs("muzzlePoint")]
+    public Transform MuzzlePoint;       // 탄환이 생성되는 총구 위치와 방향
+    [FormerlySerializedAs("projectilePrefab")]
+    public GameObject ProjectilePrefab; // 발사할 탄환 프리팹
 
     [Header("Aim")]
-    public float detectionRange = 10f;      // 플레이어 감지 거리
-    public float trackingDuration = 1.2f;   // 감지 후 발사 준비 시간
-    public float lockedAimDuration = 0.35f; // 발사 직전 대기 시간
+    [FormerlySerializedAs("detectionRange")]
+    public float DetectionRange = 10f;      // 플레이어 감지 거리
+    [FormerlySerializedAs("trackingDuration")]
+    public float TrackingDuration = 1.2f;   // 감지 후 발사 준비 시간
+    [FormerlySerializedAs("lockedAimDuration")]
+    public float LockedAimDuration = 0.35f; // 발사 직전 대기 시간
 
     [Header("Projectile")]
-    public float projectileSpeed = 12f;         // 투사체 이동 속도
-    public float projectileDamage = 20f;        // 투사체 피해량
-    public float projectileLifetime = 4f;       // 투사체 유지 시간
-    public float deathDuration = 0.7f;          // 사망 애니메이션 표시 시간
+    [FormerlySerializedAs("projectileSpeed")]
+    public float ProjectileSpeed = 12f;         // 투사체 이동 속도
+    [FormerlySerializedAs("projectileDamage")]
+    public int ProjectileDamage = 20;           // 투사체 피해량
+    [FormerlySerializedAs("projectileLifetime")]
+    public float ProjectileLifetime = 4f;       // 투사체 유지 시간
+    [FormerlySerializedAs("deathDuration")]
+    public float DeathDuration = 0.7f;          // 사망 애니메이션 표시 시간
 
     private Transform player;       // 추적할 플레이어
     private Animator animator;      // 터렛 애니메이션 재생기
@@ -35,8 +44,8 @@ public sealed class TurretController : MonoBehaviour
     private Collider2D bodyCollider; // 사망 시 비활성화할 충돌체
     private float trackingTime;     // 현재 추적한 시간
     private float lockedTime;       // 조준 고정 후 지난 시간
-    private bool aimLocked;         // 조준 고정 여부
-    private bool dead;              // 사망 여부
+    private bool isAimLocked;       // 조준 고정 여부
+    private bool isDead;            // 사망 여부
 
     /// <summary>
     /// 플레이어와 기본 포신 참조를 찾는다.
@@ -55,8 +64,8 @@ public sealed class TurretController : MonoBehaviour
         if (playerObject != null)
             player = playerObject.transform;
 
-        if (muzzlePoint == null)
-            muzzlePoint = transform;
+        if (MuzzlePoint == null)
+            MuzzlePoint = transform;
 
         PlayAnimation(idleStateHash);
     }
@@ -66,23 +75,23 @@ public sealed class TurretController : MonoBehaviour
     /// </summary>
     private void Update()
     {
-        if (dead
+        if (isDead
             || player == null
-            || Vector2.Distance(transform.position, player.position) > detectionRange)
+            || Vector2.Distance(transform.position, player.position) > DetectionRange)
         {
             ResetAim();
             return;
         }
 
-        if (!aimLocked)
+        if (!isAimLocked)
         {
             trackingTime += Time.deltaTime;
-            aimLocked = trackingTime >= trackingDuration;
+            isAimLocked = trackingTime >= TrackingDuration;
             return;
         }
 
         lockedTime += Time.deltaTime;
-        if (lockedTime < lockedAimDuration)
+        if (lockedTime < LockedAimDuration)
             return;
 
         PlayAttack();
@@ -105,14 +114,14 @@ public sealed class TurretController : MonoBehaviour
     /// </summary>
     public void SpawnProjectile()
     {
-        if (dead || projectilePrefab == null)
+        if (isDead || ProjectilePrefab == null)
             return;
 
-        Vector2 direction = -muzzlePoint.right;
+        Vector2 direction = -MuzzlePoint.right;
         GameObject projectileObject = Instantiate(
-            projectilePrefab,
-            muzzlePoint.position,
-            muzzlePoint.rotation
+            ProjectilePrefab,
+            MuzzlePoint.position,
+            MuzzlePoint.rotation
         );
 
         TurretProjectile projectile = projectileObject.GetComponent<TurretProjectile>();
@@ -122,7 +131,7 @@ public sealed class TurretController : MonoBehaviour
             return;
         }
 
-        projectile.Initialize(direction, projectileSpeed, projectileDamage, projectileLifetime);
+        projectile.Initialize(direction, ProjectileSpeed, ProjectileDamage, ProjectileLifetime);
     }
 
     /// <summary>
@@ -130,7 +139,7 @@ public sealed class TurretController : MonoBehaviour
     /// </summary>
     private void Die()
     {
-        dead = true;
+        isDead = true;
         ResetAim();
 
         if (body != null)
@@ -140,7 +149,7 @@ public sealed class TurretController : MonoBehaviour
             bodyCollider.enabled = false;
 
         PlayAnimation(dieStateHash);
-        Destroy(gameObject, deathDuration);
+        Destroy(gameObject, DeathDuration);
     }
 
     /// <summary>
@@ -159,7 +168,7 @@ public sealed class TurretController : MonoBehaviour
     {
         trackingTime = 0f;
         lockedTime = 0f;
-        aimLocked = false;
+        isAimLocked = false;
     }
 
     /// <summary>

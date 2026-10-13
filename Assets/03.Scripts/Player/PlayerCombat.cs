@@ -1,25 +1,17 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-09-30
-/// 기능: 플레이어와 잔상의 공격 입력, 타격 판정, 공격 애니메이션과 이펙트를 처리한다.
+/// 스크립트 최종 수정일: 2026-10-12
+/// 기능: 플레이어의 공격 입력, 타격 판정, 공격 애니메이션과 이펙트를 처리한다.
 /// </summary>
 
-using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public sealed class PlayerCombat : MonoBehaviour
 {
-    public event Action Attacked;                                               // 공격이 실행됐음을 전달하는 이벤트
-
-    public bool DamageEnabled { get; set; } = true;                             // 공격 판정 활성화 여부
-    public bool EffectsEnabled { get; set; } = true;                            // 공격 이펙트 활성화 여부
-    public Vector2 LastAttackAimDirection { get; private set; } = Vector2.right; // 마지막 일반 공격 조준 방향
-
     [SerializeField] private Vector2 collideBoxSize = new(1.5f, 1f);            // 공격 판정 크기
     [SerializeField] private LayerMask targetMask;                              // 공격할 대상 레이어
-    public float attackDamage = 1f;                                             // 기본 공격 피해량
-    public Vector2 uppercutBoxSize = new(1.2f, 1.8f);                           // 올려치기 공격 판정 크기
-    public Vector2 uppercutOffset = new(0.5f, 1f);                              // 올려치기 공격 판정 위치
-    public float uppercutLaunchVelocity = 18f;                                  // 적을 띄우는 수직 속도
+    [FormerlySerializedAs("attackDamage")]
+    public int AttackDamage = 10;                                               // 기본 공격 피해량
     [SerializeField] private PlayerAnimator animator;                           // 공격 애니메이션을 실행할 컴포넌트
     [SerializeField] private GameObject slashEffectPrefab;                      // 생성할 베기 이펙트 프리팹
     [SerializeField] private Vector2 slashEffectOffset = new(0.4f, 0.05f);      // 공격 주체 기준 이펙트 위치
@@ -33,7 +25,6 @@ public sealed class PlayerCombat : MonoBehaviour
     private SpriteRenderer playerRenderer;                                      // 이펙트 정렬 기준이 되는 렌더러
     private CombatVfxFeedback vfxFeedback;                                      // 공격 화면 충격을 처리하는 컴포넌트
     private float attackDebugRemaining;                                         // 공격 범위를 표시할 남은 시간
-    private int attackDirection = 1;                                            // 현재 공격의 좌우 방향
     private Vector2 attackAimDirection = Vector2.right;                         // 현재 일반 공격 조준 방향
     private SlashEffect[] slashEffects;                                         // 재사용할 베기 이펙트 목록
 
@@ -86,25 +77,11 @@ public sealed class PlayerCombat : MonoBehaviour
         }
 
         attackAimDirection = direction.normalized;
-        LastAttackAimDirection = attackAimDirection;
-
-        if (Mathf.Abs(attackAimDirection.x) > 0.01f)
-        {
-            attackDirection = attackAimDirection.x < 0f ? -1 : 1;
-        }
 
         animator.PlayAttack();
 
         SpawnSlashEffect();
-        if (EffectsEnabled)
-        {
-            vfxFeedback?.Pulse(attackAimDirection, 0.55f);
-        }
-
-        if (!DamageEnabled)
-        {
-            return;
-        }
+        vfxFeedback?.Pulse(attackAimDirection, 0.55f);
 
         Vector2 attackCenter = GetAttackCenter();
         attackDebugRemaining = 0.15f;
@@ -115,34 +92,15 @@ public sealed class PlayerCombat : MonoBehaviour
     /// <summary>
     /// 플레이어에서 마우스 위치를 향하는 방향으로 공격한다.
     /// </summary>
-    public void PerformAttack()
+    private void PerformAttack()
     {
         Attack(GetPointerAimDirection());
-        Attacked?.Invoke();
-    }
-
-    /// <summary>
-    /// 기록된 좌우 방향을 사용해 공격을 실행한다.
-    /// </summary>
-    public void PerformAttack(int direction)
-    {
-        Attack(Vector2.right * (direction < 0 ? -1f : 1f));
-        Attacked?.Invoke();
-    }
-
-    /// <summary>
-    /// 기록된 조준 방향을 사용해 공격을 실행한다.
-    /// </summary>
-    public void PerformAttack(Vector2 direction)
-    {
-        Attack(direction);
-        Attacked?.Invoke();
     }
 
     /// <summary>
     /// 현재 마우스 화면 좌표를 플레이어 기준 월드 조준 방향으로 변환한다.
     /// </summary>
-    public Vector2 GetPointerAimDirection()
+    private Vector2 GetPointerAimDirection()
     {
         if (mainCamera == null)
         {
@@ -162,76 +120,10 @@ public sealed class PlayerCombat : MonoBehaviour
     }
 
     /// <summary>
-    /// 현재 방향의 위쪽 범위에 올려치기 공격을 실행한다.
-    /// </summary>
-    public void PerformUppercut()
-    {
-        attackDirection = motor.FacingDirection;
-        animator.PlayAttack();
-        if (EffectsEnabled)
-        {
-            vfxFeedback?.Pulse(Vector2.up, 0.65f);
-        }
-
-        Vector2 center = body.position + new Vector2(
-            uppercutOffset.x * attackDirection,
-            uppercutOffset.y
-        );
-
-        attackDebugRemaining = 0.15f;
-        ApplyUppercut(center);
-        Attacked?.Invoke();
-    }
-
-    /// <summary>
-    /// 올려치기 범위에 적중한 대상에게 피해와 위쪽 속도를 적용한다.
-    /// </summary>
-    private void ApplyUppercut(Vector2 center)
-    {
-        if (!DamageEnabled)
-        {
-            return;
-        }
-
-
-        Collider2D hit = Physics2D.OverlapBox(
-            center,
-            uppercutBoxSize,
-            0f,
-            targetMask
-        );
-
-        if (hit == null)
-        {
-            return;
-        }
-
-
-        hit.GetComponentInParent<Health>()?.TakeDamage(attackDamage);
-
-        Rigidbody2D targetBody = hit.attachedRigidbody;
-        if (targetBody == null || targetBody.bodyType != RigidbodyType2D.Dynamic)
-        {
-            return;
-        }
-
-
-        Vector2 velocity = targetBody.linearVelocity;
-        velocity.y = Mathf.Max(velocity.y, uppercutLaunchVelocity);
-        targetBody.linearVelocity = velocity;
-    }
-
-    /// <summary>
     /// 지정한 공격 범위에서 처음 발견한 대상에게 피해를 적용한다.
     /// </summary>
     private void ApplyDamage(Vector2 center, Vector2 size, float angle)
     {
-        if (!DamageEnabled)
-        {
-            return;
-        }
-
-
         Collider2D hit = Physics2D.OverlapBox(
             center,
             size,
@@ -239,7 +131,7 @@ public sealed class PlayerCombat : MonoBehaviour
             targetMask
         );
 
-        hit?.GetComponentInParent<Health>()?.TakeDamage(attackDamage);
+        hit?.GetComponentInParent<Health>()?.TakeDamage(AttackDamage);
     }
 
     /// <summary>
@@ -247,7 +139,7 @@ public sealed class PlayerCombat : MonoBehaviour
     /// </summary>
     private void SpawnSlashEffect()
     {
-        if (!EffectsEnabled || slashEffects == null)
+        if (slashEffects == null)
         {
             return;
         }
