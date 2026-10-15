@@ -1,10 +1,10 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-12
-/// 기능: TimeShiftController에서 사용될 시점 기준을 담당하는 구조체
+/// 스크립트 최종 수정일: 2026-10-16
+/// 기능: 현재와 과거 시점을 구분한다.
 /// </summary>
 
 public enum TimeFlag
 {
     Present,
     Past
-};
+}

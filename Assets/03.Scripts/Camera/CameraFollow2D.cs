@@ -1,13 +1,14 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-12
+/// 스크립트 최종 수정일: 2026-10-16
 /// 기능: 추적 대상의 이동 방향을 반영하며 데드존과 맵 경계 안에서 카메라를 이동 시킨다.
 /// </summary>
 
 using UnityEngine;
 
-
 public sealed class CameraFollow2D : MonoBehaviour
 {
+    public Collider2D CameraBounds => cameraBounds;
+
     [SerializeField] private Transform target;                          // 추적할 플레이어
     [SerializeField] private Collider2D cameraBounds;                   // 카메라가 벗어나지 않을 맵 경계
     [SerializeField] private Vector2 deadZoneSize = new(3f, 1.5f);      // 카메라가 멈추는 영역
@@ -87,19 +88,18 @@ public sealed class CameraFollow2D : MonoBehaviour
         float halfHeight = currentCamera.orthographicSize;
         float halfWidth = halfHeight * currentCamera.aspect;
 
-        position.x = bounds.size.x <= halfWidth * 2f
-            ? bounds.center.x
-            : Mathf.Clamp(position.x, bounds.min.x + halfWidth, bounds.max.x - halfWidth);
-        position.y = bounds.size.y <= halfHeight * 2f
-            ? bounds.center.y
-            : Mathf.Clamp(position.y, bounds.min.y + halfHeight, bounds.max.y - halfHeight);
+        if (bounds.size.x <= halfWidth * 2f)
+            position.x = bounds.center.x;
+        else
+            position.x = Mathf.Clamp(position.x, bounds.min.x + halfWidth, bounds.max.x - halfWidth);
+
+        if (bounds.size.y <= halfHeight * 2f)
+            position.y = bounds.center.y;
+        else
+            position.y = Mathf.Clamp(position.y, bounds.min.y + halfHeight, bounds.max.y - halfHeight);
 
         return position;
     }
-
-    /// <summary>
-    /// 선택된 카메라의 데드존 범위를 Scene 창에 표시.
-    /// </summary>
 
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()

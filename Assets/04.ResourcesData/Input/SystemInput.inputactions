@@ -55,6 +55,16 @@
                     "interactions": "",
                     "initialStateCheck": false,
                     "priority": 0
+                },
+                {
+                    "name": "Interact",
+                    "type": "Button",
+                    "id": "1f31ba27-ca93-4265-9ebf-b3569348fe0e",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
                 }
             ],
             "bindings": [
@@ -132,6 +142,17 @@
                     "processors": "",
                     "groups": ";Windows",
                     "action": "TimeShift",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1ed9ef25-5018-40c2-ae78-3d7998dbfad7",
+                    "path": "<Keyboard>/f",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Windows",
+                    "action": "Interact",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

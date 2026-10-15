@@ -1,11 +1,10 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-13
+/// 스크립트 최종 수정일: 2026-10-16
 /// 기능: 플레이어의 수평 이동, 점프, 구르기, 중력, 접지와 모서리 보정을 처리한다.
 /// </summary>
 
 using System;
 using UnityEngine;
-
 
 public sealed class PlayerMotor : MonoBehaviour
 {
@@ -14,6 +13,8 @@ public sealed class PlayerMotor : MonoBehaviour
     [Header("References")]
     [SerializeField] private Transform visualRoot;                      // 좌우 반전할 플레이어
     [SerializeField] private LayerMask groundMask;                      // 바닥으로 판정할 레이어
+    [SerializeField] private bool startFacingLeft;                      // 씬 시작 시 왼쪽을 바라볼지 여부
+    [SerializeField] private bool allowFallingBelowBounds;              // 낙사 구역으로 떨어질 수 있게 하단 제한을 해제
 
     [Header("Ground Movement")]
     [SerializeField] private float maximumSpeed = 8f;                   // 최대 수평 이동 속도
@@ -57,8 +58,10 @@ public sealed class PlayerMotor : MonoBehaviour
     private Collider2D bodyCollider;                                            // 접지와 충돌 검사에 사용할 콜라이더
     private PlayerInputReader inputReader;                                      // 플레이어 입력을 제공하는 컴포넌트
     private PlayerAnimator playerAnimator;                                      // 구르기 애니메이션을 실행할 컴포넌트
+    private CameraFollow2D cameraFollow;                                        // 이동 경계를 제공하는 카메라
     private readonly RaycastHit2D[] groundHits = new RaycastHit2D[4];           // 접지 검사 결과 버퍼
     private readonly RaycastHit2D[] ceilingHits = new RaycastHit2D[4];          // 천장 검사 결과 버퍼
+    private readonly Collider2D[] overlapHits = new Collider2D[8];             // 모서리 보정의 겹침 검사 버퍼
     private ContactFilter2D groundFilter;                                       // 바닥 레이어만 검사하는 필터
 
     private Vector3 visualBaseScale;                                            // 캐릭터 시각 요소의 기본 크기
@@ -82,6 +85,8 @@ public sealed class PlayerMotor : MonoBehaviour
         bodyCollider = GetComponent<Collider2D>();
         inputReader = GetComponent<PlayerInputReader>();
         playerAnimator = GetComponentInChildren<PlayerAnimator>();
+        if (Camera.main != null)
+            cameraFollow = Camera.main.GetComponent<CameraFollow2D>();
 
         body.freezeRotation = true;
         body.gravityScale = 0f;
@@ -96,7 +101,9 @@ public sealed class PlayerMotor : MonoBehaviour
         {
             visualBaseScale = visualRoot.localScale;
         }
-            
+        if (startFacingLeft)
+            facingDirection = -1;
+        ApplyVisualFacing();
 
         Debug.Assert(
             groundMask.value != 0,
@@ -121,9 +128,6 @@ public sealed class PlayerMotor : MonoBehaviour
         isGrounded = false;
     }
 
-    /// <summary>
-    /// 현재 입력을 고정 물리 간격으로 이동 계산에 전달한다.
-    /// </summary>
     private void FixedUpdate()
     {
         SimulateInput(
@@ -167,9 +171,47 @@ public sealed class PlayerMotor : MonoBehaviour
         velocity.y = verticalDistance / deltaTime;
 
         ApplyCornerCorrection(velocity, deltaTime);
+        ApplyCameraBounds(ref velocity, deltaTime);
 
         body.linearVelocity = velocity;
         UpdateRoll(deltaTime);
+    }
+
+    /// <summary>
+    /// 카메라의 맵 경계 안에 콜라이더 전체가 들어오도록 위치와 이동 속도를 제한한다.
+    /// </summary>
+    private void ApplyCameraBounds(ref Vector2 velocity, float deltaTime)
+    {
+        if (cameraFollow == null || cameraFollow.CameraBounds == null)
+            return;
+
+        Bounds worldBounds = cameraFollow.CameraBounds.bounds;
+        Bounds playerBounds = bodyCollider.bounds;
+        Vector2 offset = (Vector2)playerBounds.center - body.position;
+        Vector2 center = (Vector2)worldBounds.center - offset;
+        Vector2 halfSize = Vector2.Max(Vector2.zero,
+            (Vector2)worldBounds.extents - (Vector2)playerBounds.extents);
+        Vector2 minimum = center - halfSize;
+        Vector2 maximum = center + halfSize;
+        if (allowFallingBelowBounds)
+            minimum.y = float.NegativeInfinity;
+        Vector2 position = body.position;
+        Vector2 clampedPosition = new(
+            Mathf.Clamp(position.x, minimum.x, maximum.x),
+            Mathf.Clamp(position.y, minimum.y, maximum.y)
+        );
+        if (position != clampedPosition)
+            body.position = clampedPosition;
+
+        Vector2 limitedVelocity = new(
+            Mathf.Clamp(velocity.x, (minimum.x - clampedPosition.x) / deltaTime,
+                (maximum.x - clampedPosition.x) / deltaTime),
+            Mathf.Clamp(velocity.y, (minimum.y - clampedPosition.y) / deltaTime,
+                (maximum.y - clampedPosition.y) / deltaTime)
+        );
+        if (!Mathf.Approximately(velocity.y, limitedVelocity.y))
+            verticalVelocity = 0f;
+        velocity = limitedVelocity;
     }
 
     /// <summary>
@@ -180,9 +222,8 @@ public sealed class PlayerMotor : MonoBehaviour
         if (!isGrounded || rollRemaining > 0f)
             return;
 
-        facingDirection = Mathf.Abs(horizontalInput) > 0.01f
-            ? (int)Mathf.Sign(horizontalInput)
-            : facingDirection;
+        if (Mathf.Abs(horizontalInput) > 0.01f)
+            facingDirection = (int)Mathf.Sign(horizontalInput);
         rollHorizontalVelocity = facingDirection * Mathf.Max(0f, rollSpeed);
         rollRemaining = Mathf.Max(0.01f, rollDuration);
         ApplyVisualFacing();
@@ -204,6 +245,9 @@ public sealed class PlayerMotor : MonoBehaviour
         bool isGroundDetected = false;
         for (int index = 0; index < hitCount; index++)
         {
+            if (CanPassFromBelow(groundHits[index].collider)
+                && bodyCollider.bounds.min.y < groundHits[index].collider.bounds.max.y - collisionSkin * 2f)
+                continue;
             if (groundHits[index].normal.y > 0.5f)
             {
                 isGroundDetected = true;
@@ -215,13 +259,11 @@ public sealed class PlayerMotor : MonoBehaviour
         {
             isGroundDetected = false;
         }
-            
 
         if (verticalVelocity > 0f && body.linearVelocity.y <= 0f)
         {
             verticalVelocity = 0f;
         }
-            
 
         isGrounded = isGroundDetected;
 
@@ -231,7 +273,6 @@ public sealed class PlayerMotor : MonoBehaviour
             {
                 verticalVelocity = 0f;
             }
-                
 
             coyoteTimeRemaining = coyoteTimeDuration;
         }
@@ -262,9 +303,6 @@ public sealed class PlayerMotor : MonoBehaviour
         );
     }
 
-    /// <summary>
-    /// 남은 구르기 시간을 감소시킨다.
-    /// </summary>
     private void UpdateRoll(float deltaTime)
     {
         if (rollRemaining <= 0f)
@@ -274,7 +312,7 @@ public sealed class PlayerMotor : MonoBehaviour
     }
 
     /// <summary>
-    /// 상승 중 천장이 감지되면 상승 속도를 즉시 제거한다.
+    /// 올라가다가 천장에 닿으면 상승 속도를 0으로 만든다.
     /// </summary>
     private void StopRisingAtCeiling(ref Vector2 velocity)
     {
@@ -282,7 +320,6 @@ public sealed class PlayerMotor : MonoBehaviour
         {
             return;
         }
-            
 
         int hitCount = bodyCollider.Cast(
             Vector2.up,
@@ -293,6 +330,8 @@ public sealed class PlayerMotor : MonoBehaviour
 
         for (int index = 0; index < hitCount; index++)
         {
+            if (CanPassFromBelow(ceilingHits[index].collider))
+                continue;
             if (ceilingHits[index].normal.y < -0.5f)
             {
                 verticalVelocity = 0f;
@@ -341,20 +380,21 @@ public sealed class PlayerMotor : MonoBehaviour
             {
                 return groundDeceleration;
             }
-                
 
             bool isReversing =
                 !Mathf.Approximately(currentSpeed, 0f) &&
                 Mathf.Sign(currentSpeed) != Mathf.Sign(horizontalInput);
 
-            return isReversing
-                ? groundReverseAcceleration
-                : groundAcceleration;
+            if (isReversing)
+                return groundReverseAcceleration;
+
+            return groundAcceleration;
         }
 
-        return Mathf.Approximately(horizontalInput, 0f)
-            ? airDeceleration
-            : airAcceleration;
+        if (Mathf.Approximately(horizontalInput, 0f))
+            return airDeceleration;
+
+        return airAcceleration;
     }
 
     /// <summary>
@@ -366,13 +406,11 @@ public sealed class PlayerMotor : MonoBehaviour
         {
             return false;
         }
-            
 
         if (coyoteTimeRemaining <= 0f)
         {
             return false;
         }
-            
 
         velocity.y = jumpVelocity;
 
@@ -413,7 +451,6 @@ public sealed class PlayerMotor : MonoBehaviour
             {
                 return distance;
             }
-                
 
             velocity.y = 0f;
         }
@@ -446,7 +483,7 @@ public sealed class PlayerMotor : MonoBehaviour
     }
 
     /// <summary>
-    /// 착지 순간 남아 있는 점프 선입력을 즉시 실행한다.
+    /// 착지할 때 남아 있는 점프 선입력을 실행한다.
     /// </summary>
     private void OnCollisionEnter2D(Collision2D collision)
     {
@@ -454,7 +491,6 @@ public sealed class PlayerMotor : MonoBehaviour
         {
             return;
         }
-            
 
         StopRisingFromCollision(collision);
 
@@ -462,7 +498,6 @@ public sealed class PlayerMotor : MonoBehaviour
         {
             return;
         }
-            
 
         for (int index = 0; index < collision.contactCount; index++)
         {
@@ -470,7 +505,6 @@ public sealed class PlayerMotor : MonoBehaviour
             {
                 continue;
             }
-                
 
             Vector2 velocity = body.linearVelocity;
             velocity.y = jumpVelocity;
@@ -494,7 +528,7 @@ public sealed class PlayerMotor : MonoBehaviour
         {
             StopRisingFromCollision(collision);
         }
-            
+
     }
 
     /// <summary>
@@ -502,11 +536,12 @@ public sealed class PlayerMotor : MonoBehaviour
     /// </summary>
     private void StopRisingFromCollision(Collision2D collision)
     {
+        if (CanPassFromBelow(collision.collider))
+            return;
         if (verticalVelocity <= 0f)
         {
             return;
         }
-            
 
         for (int index = 0; index < collision.contactCount; index++)
         {
@@ -514,7 +549,6 @@ public sealed class PlayerMotor : MonoBehaviour
             {
                 continue;
             }
-                
 
             verticalVelocity = 0f;
             body.linearVelocity = new Vector2(body.linearVelocity.x, 0f);
@@ -539,20 +573,16 @@ public sealed class PlayerMotor : MonoBehaviour
         {
             return;
         }
-            
+
         ApplyVisualFacing();
     }
 
-    /// <summary>
-    /// 현재 방향을 캐릭터 시각 요소의 X축 반전에 적용한다.
-    /// </summary>
     private void ApplyVisualFacing()
     {
         if (visualRoot == null)
         {
             return;
         }
-            
 
         Vector3 scale = visualBaseScale;
         scale.x = Mathf.Abs(scale.x) * facingDirection;
@@ -571,7 +601,6 @@ public sealed class PlayerMotor : MonoBehaviour
         {
             return;
         }
-            
 
         Vector2 predictedPosition = body.position + velocity * deltaTime;
 
@@ -579,12 +608,10 @@ public sealed class PlayerMotor : MonoBehaviour
         {
             return;
         }
-            
 
-        float preferredDirection =
-            Mathf.Approximately(velocity.x, 0f)
-                ? 1f
-                : Mathf.Sign(velocity.x);
+        float preferredDirection = 1f;
+        if (!Mathf.Approximately(velocity.x, 0f))
+            preferredDirection = Mathf.Sign(velocity.x);
 
         for (
             float distance = cornerCorrectionStep;
@@ -624,13 +651,11 @@ public sealed class PlayerMotor : MonoBehaviour
         {
             return false;
         }
-            
 
         if (OverlapsGround(predictedPosition + offset))
         {
             return false;
         }
-            
 
         // 속도는 유지하고 위치만 옮긴다.
         body.position += offset;
@@ -655,12 +680,22 @@ public sealed class PlayerMotor : MonoBehaviour
             Mathf.Max(0.01f, bounds.size.y - collisionSkin * 2f)
         );
 
-        return Physics2D.OverlapBox(
-            checkCenter,
-            checkSize,
-            0f,
-            groundMask
-        ) != null;
+        int count = Physics2D.OverlapBox(checkCenter, checkSize, 0f, groundFilter, overlapHits);
+        for (int index = 0; index < count; index++)
+            if (!CanPassFromBelow(overlapHits[index]))
+                return true;
+        return false;
+    }
+
+    /// <summary>
+    /// 일방향 발판은 천장과 모서리 보정에서 제외해 아래에서 통과시킨다.
+    /// </summary>
+    private static bool CanPassFromBelow(Collider2D collider)
+    {
+        if (collider == null || !collider.usedByEffector)
+            return false;
+        PlatformEffector2D effector = collider.GetComponent<PlatformEffector2D>();
+        return effector != null && effector.enabled && effector.useOneWay;
     }
 
 #if UNITY_EDITOR

@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-12
+/// 스크립트 최종 수정일: 2026-10-16
 /// 기능: 플레이어의 공격 입력, 타격 판정, 공격 애니메이션과 이펙트를 처리한다.
 /// </summary>
 
@@ -20,6 +20,7 @@ public sealed class PlayerCombat : MonoBehaviour
 
     private PlayerInputReader inputReader;                                      // 공격 입력을 제공하는 컴포넌트
     private PlayerMotor motor;                                                  // 현재 바라보는 방향을 제공하는 컴포넌트
+    private TimeShiftController timeShift;                                      // 시간 전환 준비 중 공격을 제한할 컴포넌트
     private Rigidbody2D body;                                                   // 공격 판정 기준이 되는 물리 위치
     private Camera mainCamera;                                                   // 마우스 좌표를 월드 좌표로 변환할 카메라
     private SpriteRenderer playerRenderer;                                      // 이펙트 정렬 기준이 되는 렌더러
@@ -35,6 +36,7 @@ public sealed class PlayerCombat : MonoBehaviour
     {
         inputReader = GetComponent<PlayerInputReader>();
         motor = GetComponent<PlayerMotor>();
+        timeShift = GetComponent<TimeShiftController>();
         body = GetComponent<Rigidbody2D>();
         mainCamera = Camera.main;
         playerRenderer = GetComponentInChildren<SpriteRenderer>();
@@ -55,9 +57,9 @@ public sealed class PlayerCombat : MonoBehaviour
     {
         if (inputReader.ConsumeAttackPressed())
         {
-            PerformAttack();
+            if (timeShift == null || !timeShift.IsPreparing)
+                Attack(GetPointerAimDirection());
         }
-
 
         if (attackDebugRemaining > 0f)
         {
@@ -90,14 +92,6 @@ public sealed class PlayerCombat : MonoBehaviour
     }
 
     /// <summary>
-    /// 플레이어에서 마우스 위치를 향하는 방향으로 공격한다.
-    /// </summary>
-    private void PerformAttack()
-    {
-        Attack(GetPointerAimDirection());
-    }
-
-    /// <summary>
     /// 현재 마우스 화면 좌표를 플레이어 기준 월드 조준 방향으로 변환한다.
     /// </summary>
     private Vector2 GetPointerAimDirection()
@@ -114,9 +108,10 @@ public sealed class PlayerCombat : MonoBehaviour
 
         Vector2 pointerWorld = mainCamera.ScreenToWorldPoint(inputReader.PointerPosition);
         Vector2 direction = pointerWorld - body.position;
-        return direction.sqrMagnitude > 0.0001f
-            ? direction.normalized
-            : Vector2.right * motor.FacingDirection;
+        if (direction.sqrMagnitude > 0.0001f)
+            return direction.normalized;
+
+        return Vector2.right * motor.FacingDirection;
     }
 
     /// <summary>
@@ -131,7 +126,15 @@ public sealed class PlayerCombat : MonoBehaviour
             targetMask
         );
 
-        hit?.GetComponentInParent<Health>()?.TakeDamage(AttackDamage);
+        if (hit == null)
+            return;
+        RollingCarrier carrier = hit.GetComponentInParent<RollingCarrier>();
+        if (carrier != null)
+        {
+            carrier.Hit(attackAimDirection);
+            return;
+        }
+        hit.GetComponentInParent<Health>()?.TakeDamage(AttackDamage, DamageSource.Player);
     }
 
     /// <summary>
@@ -199,9 +202,6 @@ public sealed class PlayerCombat : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 현재 재생 중이지 않은 베기 이펙트를 반환한다.
-    /// </summary>
     private SlashEffect GetAvailableSlashEffect()
     {
         for (int index = 0; index < slashEffects.Length; index++)
@@ -234,18 +234,15 @@ public sealed class PlayerCombat : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 현재 공격 방향에 맞는 타격 판정 중심을 계산한다.
-    /// </summary>
     private Vector2 GetAttackCenter()
     {
-        return (body != null ? body.position : (Vector2)transform.position)
-            + attackAimDirection * collideBoxSize.x * 0.5f;
+        Vector2 position = transform.position;
+        if (body != null)
+            position = body.position;
+
+        return position + attackAimDirection * collideBoxSize.x * 0.5f;
     }
 
-    /// <summary>
-    /// 현재 일반 공격 조준 방향을 각도로 변환한다.
-    /// </summary>
     private float GetAttackAngle()
     {
         return Mathf.Atan2(attackAimDirection.y, attackAimDirection.x) * Mathf.Rad2Deg;
@@ -268,11 +265,6 @@ public sealed class PlayerCombat : MonoBehaviour
         Debug.DrawLine(topRight, topLeft, Color.red);
         Debug.DrawLine(topLeft, bottomLeft, Color.red);
     }
-
-
-    /// <summary>
-    /// 아래 있는 함수는 히트 박스를 시각화 하는 역할을 수행한다.
-    /// </summary>
 
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()

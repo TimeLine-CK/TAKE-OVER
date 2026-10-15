@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-12
+/// 스크립트 최종 수정일: 2026-10-16
 /// 기능: 인간형 로봇의 대기, 추적, 공격과 사망 상태를 처리한다.
 /// </summary>
 
@@ -49,6 +49,8 @@ public class RobotEnemy : MonoBehaviour
     private float attackHitTime;                        // 현재 공격의 피해 판정 시각
     private bool isAttackPending;                      // 피해 판정 대기 여부
     private float attackDirection;                     // 공격 시작 당시 바라본 방향
+    private EnemyAwareness awareness;
+    private float pushedUntil;
 
     /// <summary>
     /// 로봇 컴포넌트와 플레이어 참조를 초기화한다.
@@ -60,10 +62,12 @@ public class RobotEnemy : MonoBehaviour
         spriteRenderer = GetComponentInChildren<SpriteRenderer>();
         animator = GetComponentInChildren<Animator>();
         health = GetComponent<Health>();
+        awareness = GetComponent<EnemyAwareness>();
 
         if (health != null)
         {
             health.Died += Die;
+            health.Restored += RestoreState;
         }
 
         if (spriteRenderer != null)
@@ -81,17 +85,67 @@ public class RobotEnemy : MonoBehaviour
         SetState(RobotState.Idle);
     }
 
+    private void OnDisable()
+    {
+        isAttackPending = false;
+        awareness?.ResetDetection();
+    }
+
+    /// <summary>
+    /// 운반대에 밀리는 동안 추적 이동이 물리적인 밀림을 덮어쓰지 않게 한다.
+    /// </summary>
+    public void Push(float horizontalSpeed)
+    {
+        if (health.IsDead)
+            return;
+        pushedUntil = Time.time + 0.15f;
+        isAttackPending = false;
+        body.linearVelocity = new Vector2(horizontalSpeed, body.linearVelocity.y);
+    }
+
+    /// <summary>
+    /// 저장된 체력에 맞춰 적의 물리와 애니메이션을 복원한다.
+    /// </summary>
+    private void RestoreState()
+    {
+        CancelInvoke(nameof(HideAfterDeath));
+        isAttackPending = false;
+        pushedUntil = 0f;
+        nextAttackTime = Time.time;
+        body.simulated = !health.IsDead;
+        bodyCollider.enabled = !health.IsDead;
+        body.linearVelocity = Vector2.zero;
+        awareness?.ResetDetection();
+        state = (RobotState)(-1);
+        if (health.IsDead)
+        {
+            SetState(RobotState.Dead);
+            gameObject.SetActive(false);
+        }
+        else
+            SetState(RobotState.Idle);
+    }
+
     /// <summary>
     /// 플레이어와의 거리에 따라 대기, 추적 또는 공격 상태를 실행한다.
     /// </summary>
     private void Update()
     {
-        if (state == RobotState.Dead || player == null)
+        if (state == RobotState.Dead || player == null || !player.gameObject.activeInHierarchy)
         {
             return;
         }
 
         float distance = Mathf.Abs(player.position.x - transform.position.x);
+        if (Time.time < pushedUntil)
+            return;
+        if (awareness != null && !awareness.Observe(distance <= DetectionRange))
+        {
+            isAttackPending = false;
+            body.linearVelocity = new Vector2(0f, body.linearVelocity.y);
+            SetState(RobotState.Idle);
+            return;
+        }
 
         if (isAttackPending)
         {
@@ -104,7 +158,7 @@ public class RobotEnemy : MonoBehaviour
                     && Mathf.Abs(player.position.y - transform.position.y) <= AttackHeight
                     && horizontalOffset * attackDirection >= 0f)
                 {
-                    playerHealth?.TakeDamage(AttackDamage);
+                    playerHealth?.TakeDamage(AttackDamage, DamageSource.Enemy);
                 }
             }
             return;
@@ -146,7 +200,7 @@ public class RobotEnemy : MonoBehaviour
     }
 
     /// <summary>
-    /// 사망 상태로 전환하고 잠시 뒤 로봇을 제거한다.
+    /// 사망 상태로 전환하고 애니메이션이 끝나면 복원을 위해 비활성화한다.
     /// </summary>
     private void Die()
     {
@@ -155,7 +209,13 @@ public class RobotEnemy : MonoBehaviour
         body.linearVelocity = Vector2.zero;
         body.simulated = false;
         bodyCollider.enabled = false;
-        Destroy(gameObject, DeathDuration);
+        awareness?.ResetDetection();
+        Invoke(nameof(HideAfterDeath), Mathf.Max(0.01f, DeathDuration));
+    }
+
+    private void HideAfterDeath()
+    {
+        gameObject.SetActive(false);
     }
 
     /// <summary>
@@ -170,19 +230,15 @@ public class RobotEnemy : MonoBehaviour
 
         state = nextState;
 
-        int stateHash = state switch
-        {
-            RobotState.Run => runStateHash,
-            RobotState.Dead => dieStateHash,
-            _ => idleStateHash
-        };
+        int stateHash = idleStateHash;
+        if (state == RobotState.Run)
+            stateHash = runStateHash;
+        else if (state == RobotState.Dead)
+            stateHash = dieStateHash;
 
         PlayAnimation(stateHash);
     }
 
-    /// <summary>
-    /// 지정한 Animator 상태를 처음부터 재생한다.
-    /// </summary>
     private void PlayAnimation(int stateHash)
     {
         if (animator != null)
@@ -191,9 +247,6 @@ public class RobotEnemy : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 로봇 스프라이트가 이동 또는 공격 대상을 바라보게 한다.
-    /// </summary>
     private void SetFacingDirection(float direction)
     {
         if (spriteRenderer != null && Mathf.Abs(direction) > 0.01f)
@@ -202,14 +255,12 @@ public class RobotEnemy : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 이벤트 구독을 해제한다.
-    /// </summary>
     private void OnDestroy()
     {
         if (health != null)
         {
             health.Died -= Die;
+            health.Restored -= RestoreState;
         }
     }
 }

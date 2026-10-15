@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-01
+/// 스크립트 최종 수정일: 2026-10-16
 /// 기능: 터렛 투사체를 이동시키고 플레이어에게 피해를 적용한다.
 /// </summary>
 
@@ -23,9 +23,6 @@ public sealed class TurretProjectile : MonoBehaviour
         Destroy(gameObject, lifetime);
     }
 
-    /// <summary>
-    /// 현재 방향으로 투사체를 이동시킨다.
-    /// </summary>
     private void Update()
     {
         transform.position += (Vector3)(direction * speed * Time.deltaTime);
@@ -39,7 +36,7 @@ public sealed class TurretProjectile : MonoBehaviour
         Health targetHealth = other.GetComponentInParent<Health>();
         if (targetHealth != null && targetHealth.CompareTag("Player"))
         {
-            targetHealth.TakeDamage(damage);
+            targetHealth.TakeDamage(damage, DamageSource.Enemy);
             Destroy(gameObject);
             return;
         }

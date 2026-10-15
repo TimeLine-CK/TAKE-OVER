@@ -1,6 +1,6 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-12
-/// 기능: Unity Input System에서 이동, 점프, 공격과 구르기 입력을 읽어 전달한다.
+/// 스크립트 최종 수정일: 2026-10-16
+/// 기능: Unity Input System에서 이동, 공격, 시간 전환과 상호작용 입력을 읽어 전달한다.
 /// </summary>
 
 using UnityEngine;
@@ -13,6 +13,7 @@ public sealed class PlayerInputReader : MonoBehaviour
     private const string AttackActionName = "Attack";               // 공격 액션 이름
     private const string RollActionName = "Roll";                   // 구르기 액션 이름
     private const string TimeShiftActionName = "TimeShift";         // 시간 전환 액션 이름
+    private const string InteractActionName = "Interact";           // 상호작용 액션 이름
 
     public Vector2 Move { get; private set; }              // 현재 이동 입력값 프로퍼티
     public Vector2 PointerPosition => Mouse.current != null
@@ -27,11 +28,13 @@ public sealed class PlayerInputReader : MonoBehaviour
     private InputAction attackAction;               // 공격 액션
     private InputAction rollAction;                 // 구르기 액션
     private InputAction timeShiftAction;            // 시간 전환 액션
+    private InputAction interactAction;             // 상호작용 액션
 
     private bool isJumpPressed;                     // 점프 입력 여부
     private bool isAttackPressed;                   // 공격 입력 여부
     private bool isRollPressed;                     // 구르기 입력 여부
     private bool isTimeShiftPressed;                // 시간 전환 입력 여부
+    private bool isInteractPressed;                 // 상호작용 입력 여부
 
     /// <summary>
     /// PlayerInput에서 사용할 액션들을 찾아 저장.
@@ -44,6 +47,7 @@ public sealed class PlayerInputReader : MonoBehaviour
         attackAction = playerInput.actions.FindAction(AttackActionName, true);
         rollAction = playerInput.actions.FindAction(RollActionName, true);
         timeShiftAction = playerInput.actions.FindAction(TimeShiftActionName, true);
+        interactAction = playerInput.actions.FindAction(InteractActionName, true);
 
         if (pointerCursor != null)
         {
@@ -61,9 +65,6 @@ public sealed class PlayerInputReader : MonoBehaviour
         ClearPendingInputs();
     }
 
-    /// <summary>
-    /// 현재 이동 액션 값을 매 프레임 갱신.
-    /// </summary>
     private void Update()
     {
         Move = moveAction.ReadValue<Vector2>();
@@ -79,56 +80,53 @@ public sealed class PlayerInputReader : MonoBehaviour
         ClearPendingInputs();
     }
 
-    /// <summary>
-    /// 점프 입력을 한 번만 반환하고 소비한다.
-    /// </summary>
-
     public bool ConsumeJumpPressed()
     {
-        if (!isJumpPressed) return false;
+        if (!isJumpPressed)
+            return false;
         isJumpPressed = false;
         return true;
     }
 
-    /// <summary>
-    /// 공격 입력을 한 번만 반환하고 소비한다.
-    /// </summary>
     public bool ConsumeAttackPressed()
     {
-        if (!isAttackPressed) return false;
+        if (!isAttackPressed)
+            return false;
         isAttackPressed = false;
         return true;
     }
 
-    /// <summary>
-    /// 구르기 입력을 한 번만 반환하고 소비한다.
-    /// </summary>
     public bool ConsumeRollPressed()
     {
-        if (!isRollPressed) return false;
+        if (!isRollPressed)
+            return false;
         isRollPressed = false;
         return true;
     }
 
-    /// <summary>
-    /// 시간 전환 입력을 한번만 반환한다 전환 시킨다.
-    /// </summary>
     public bool ConsumeTimeShiftPressed()
     {
-        if(!isTimeShiftPressed) return false;
+        if(!isTimeShiftPressed)
+            return false;
         isTimeShiftPressed = false;
         return true;
     }
 
-    /// <summary>
-    /// 입력 되지 않은 일회성 입력을 모두 제거한다.
-    /// </summary>
+    public bool ConsumeInteractPressed()
+    {
+        if (!isInteractPressed)
+            return false;
+        isInteractPressed = false;
+        return true;
+    }
+
     public void ClearPendingInputs()
     {
         isJumpPressed = false;
         isAttackPressed = false;
         isRollPressed = false;
         isTimeShiftPressed = false;
+        isInteractPressed = false;
     }
 
     /// <summary>
@@ -140,7 +138,6 @@ public sealed class PlayerInputReader : MonoBehaviour
         {
             return;
         }
-
 
         if (context.action == jumpAction)
         {
@@ -157,6 +154,10 @@ public sealed class PlayerInputReader : MonoBehaviour
         else if (context.action == timeShiftAction)
         {
             isTimeShiftPressed = true;
+        }
+        else if (context.action == interactAction)
+        {
+            isInteractPressed = true;
         }
 
     }

@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-13
+/// 스크립트 최종 수정일: 2026-10-16
 /// 기능: 현재와 과거 월드를 준비하고 입력에 따라 플레이어의 시점을 전환한다.
 /// </summary>
 
@@ -17,14 +17,78 @@ public sealed class TimeShiftController : MonoBehaviour
     [SerializeField] private TimeFlagWolrdRoot presentWorld;                // 현재 시점의 월드 루트
     [SerializeField] private LayerMask destinationObstacleMask;             // 시점 전환을 막는 지형 레이어
     [SerializeField] private TimeShiftVfxPlayer shiftVfxPlayer;              // 화면 전환 영상을 재생하는 컴포넌트
+    [SerializeField] private Material previewMaterial;                     // 다른 시대 지형의 점선 머티리얼
+    [SerializeField] private float previewLineWidth = 0.04f;                // 점선 두께
+    [SerializeField] private float previewDashLength = 0.18f;               // 점선 한 조각의 길이
+    [SerializeField] private float previewGapLength = 0.12f;                // 점선 조각 사이의 간격
+
+    public bool IsPreparing => isPreparing;                               // 공격과 상호작용을 제한할 준비 상태
+    public TimeFlag CurrentFlag => currentFlag;                           // 상호작용에 적용할 현재 시대
+    public bool IsReady => isReady;                                       // 시대별 월드 준비 완료 여부
+    public event System.Action WorldsReady;                               // 두 시대의 준비가 끝났을 때 호출하는 이벤트
 
     private TimeFlag currentFlag = TimeFlag.Present;                        // 현재 활성화된 시점
     private TimeFlagWolrdRoot pastWorld;                                    // 과거 시점의 월드 루트
     private bool isReady;                                                   // 과거 씬 준비 완료 여부
     private bool isPreparing;                                               // 시점 전환 준비 중 여부
+    private bool isTransitioning;                                          // 준비 또는 전환 연출 진행 여부
+    private Coroutine transitionRoutine;                                  // 적 피격으로 취소할 전환 코루틴
+    private TimeWorldPreview presentPreview;                               // 현재 지형의 외곽 미리보기
+    private TimeWorldPreview pastPreview;                                  // 과거 지형의 외곽 미리보기
+    private Health playerHealth;                                          // 끼임 사망을 처리할 체력 컴포넌트
+    private readonly Collider2D[] obstacleHits = new Collider2D[16];        // 목적 시대의 장애물 검사 결과
+
+    public TimeFlagWolrdRoot GetWorld(TimeFlag flag)
+    {
+        if (flag == TimeFlag.Present)
+            return presentWorld;
+        return pastWorld;
+    }
 
     /// <summary>
-    /// 필수 참조를 확인하고 과거 씬을 Additive 방식으로 준비한다.
+    /// 저장된 시대를 연출과 끼임 판정 없이 복원한다.
+    /// </summary>
+    public void RestoreWorld(TimeFlag flag)
+    {
+        if (!isReady)
+            return;
+        StopAllCoroutines();
+        shiftVfxPlayer?.StopPlayback();
+        transitionRoutine = null;
+        isPreparing = false;
+        isTransitioning = false;
+        currentFlag = flag;
+        presentWorld.SetWorldActive(flag == TimeFlag.Present);
+        pastWorld.SetWorldActive(flag == TimeFlag.Past);
+        UpdatePreviews();
+        Physics2D.SyncTransforms();
+    }
+
+    private void Awake()
+    {
+        playerHealth = GetComponent<Health>();
+    }
+
+    /// <summary>
+    /// 부활하면 현재 시대에 맞는 점선 표시를 복원한다.
+    /// </summary>
+    private void OnEnable()
+    {
+        if (playerHealth != null)
+            playerHealth.Damaged += OnDamaged;
+
+        if (isReady)
+            UpdatePreviews();
+    }
+
+    private void LateUpdate()
+    {
+        presentPreview?.Refresh();
+        pastPreview?.Refresh();
+    }
+
+    /// <summary>
+    /// 연결된 컴포넌트를 확인하고 과거 씬을 추가로 불러온다.
     /// </summary>
     private IEnumerator Start()
     {
@@ -34,18 +98,41 @@ public sealed class TimeShiftController : MonoBehaviour
         yield return LoadPastScene();
     }
 
-    /// <summary>
-    /// 시간 전환 입력을 소비하고 중복 실행을 막는다.
-    /// </summary>
     private void Update()
     {
         if (!inputReader.ConsumeTimeShiftPressed())
             return;
 
-        if (!isReady || isPreparing)
+        TryStartTimeShift();
+    }
+
+    /// <summary>
+    /// 월드 준비와 현재 진행 상태를 확인한 뒤 시간 전환 준비를 시작한다.
+    /// </summary>
+    public bool TryStartTimeShift()
+    {
+        if (!isActiveAndEnabled || !isReady || isTransitioning || playerHealth.IsDead)
+            return false;
+
+        transitionRoutine = StartCoroutine(PrepareTimeShift());
+        return true;
+    }
+
+    /// <summary>
+    /// 적에게 피해를 받으면 준비를 취소하고 기존 시대를 유지한다.
+    /// </summary>
+    private void OnDamaged(DamageSource source)
+    {
+        if (source != DamageSource.Enemy || !isPreparing)
             return;
 
-        StartCoroutine(PrepareTimeShift());
+        if (transitionRoutine != null)
+            StopCoroutine(transitionRoutine);
+
+        transitionRoutine = null;
+        isPreparing = false;
+        isTransitioning = false;
+        shiftVfxPlayer?.StopPlayback();
     }
 
     /// <summary>
@@ -54,6 +141,10 @@ public sealed class TimeShiftController : MonoBehaviour
     private IEnumerator PrepareTimeShift()
     {
         isPreparing = true;
+        isTransitioning = true;
+
+        if (preparationDuration > 0f)
+            yield return new WaitForSeconds(preparationDuration);
 
         if (shiftVfxPlayer != null)
         {
@@ -61,13 +152,12 @@ public sealed class TimeShiftController : MonoBehaviour
         }
         else
         {
-            if (preparationDuration > 0f)
-                yield return new WaitForSeconds(preparationDuration);
-
             TryShiftWorld();
         }
 
         isPreparing = false;
+        isTransitioning = false;
+        transitionRoutine = null;
     }
 
     /// <summary>
@@ -75,8 +165,15 @@ public sealed class TimeShiftController : MonoBehaviour
     /// </summary>
     private void OnDisable()
     {
+        if (playerHealth != null)
+            playerHealth.Damaged -= OnDamaged;
+
         StopAllCoroutines();
+        transitionRoutine = null;
         isPreparing = false;
+        isTransitioning = false;
+        presentPreview?.SetVisible(false);
+        pastPreview?.SetVisible(false);
 
         if (shiftVfxPlayer != null)
             shiftVfxPlayer.StopPlayback();
@@ -113,11 +210,22 @@ public sealed class TimeShiftController : MonoBehaviour
         presentWorld.SetWorldActive(true);
         pastWorld.SetWorldActive(false);
         currentFlag = TimeFlag.Present;
+        if (previewMaterial != null)
+        {
+            presentPreview = new TimeWorldPreview(presentWorld.transform, destinationObstacleMask, previewMaterial, previewLineWidth, previewDashLength, previewGapLength);
+            pastPreview = new TimeWorldPreview(pastWorld.transform, destinationObstacleMask, previewMaterial, previewLineWidth, previewDashLength, previewGapLength);
+        }
+        else
+        {
+            Debug.LogWarning("TimeShiftController에 점선 미리보기 머티리얼이 설정되지 않았습니다.", this);
+        }
         isReady = true;
+        UpdatePreviews();
+        WorldsReady?.Invoke();
     }
 
     /// <summary>
-    /// 목적 시점의 월드를 활성화하고 플레이어 위치에 장애물이 있으면 전환을 취소한다.
+    /// 완료 직전 위치에서 목적 시점을 적용하고 몸체가 장애물에 끼면 사망 처리한다.
     /// </summary>
     private void TryShiftWorld()
     {
@@ -138,19 +246,24 @@ public sealed class TimeShiftController : MonoBehaviour
             destinationWorld = presentWorld;
         }
 
+        foreach (TurretProjectile projectile in currentWorld.GetComponentsInChildren<TurretProjectile>(true))
+        {
+            projectile.gameObject.SetActive(false);
+            Destroy(projectile.gameObject);
+        }
         currentWorld.SetWorldActive(false);
         destinationWorld.SetWorldActive(true);
+        currentFlag = destinationFlag;
+        isPreparing = false;
+        UpdatePreviews();
         Physics2D.SyncTransforms();
 
         if (IsDestinationBlocked())
         {
-            destinationWorld.SetWorldActive(false);
-            currentWorld.SetWorldActive(true);
-            Physics2D.SyncTransforms();
+            playerHealth.TakeDamage(int.MaxValue, DamageSource.Environment);
             return;
         }
 
-        currentFlag = destinationFlag;
         playerRd.WakeUp();
     }
 
@@ -165,7 +278,31 @@ public sealed class TimeShiftController : MonoBehaviour
             Mathf.Max(0.01f, bounds.size.y - 0.02f)
         );
 
-        return Physics2D.OverlapBox(bounds.center, checkSize, 0f, destinationObstacleMask) != null;
+        ContactFilter2D filter = new ContactFilter2D();
+        filter.SetLayerMask(destinationObstacleMask);
+        filter.useTriggers = false;
+        int count = Physics2D.OverlapBox(bounds.center, checkSize, 0f, filter, obstacleHits);
+        for (int index = 0; index < count; index++)
+        {
+            Collider2D obstacle = obstacleHits[index];
+            if (obstacle == playerCollider || obstacle.transform.IsChildOf(transform))
+                continue;
+            if (playerCollider.Distance(obstacle).distance < -0.02f)
+                return true;
+        }
+        return false;
+    }
+
+    private void UpdatePreviews()
+    {
+        presentPreview?.SetVisible(currentFlag == TimeFlag.Past);
+        pastPreview?.SetVisible(currentFlag == TimeFlag.Present);
+    }
+
+    private void OnDestroy()
+    {
+        presentPreview?.Dispose();
+        pastPreview?.Dispose();
     }
 
     /// <summary>
@@ -192,7 +329,12 @@ public sealed class TimeShiftController : MonoBehaviour
     /// </summary>
     private bool ValidateReferences()
     {
-        if (inputReader == null || playerRd == null || playerCollider == null || presentWorld == null)
+        if (destinationObstacleMask.value == 0)
+        {
+            Debug.LogError("TimeShiftController의 지형 레이어가 설정되지 않았습니다.", this);
+            return false;
+        }
+        if (inputReader == null || playerRd == null || playerCollider == null || presentWorld == null || playerHealth == null)
         {
             Debug.LogError("TimeShiftController의 필수 참조가 설정되지 않았습니다.", this);
             return false;

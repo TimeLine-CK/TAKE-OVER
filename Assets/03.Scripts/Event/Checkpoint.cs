@@ -1,19 +1,27 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-13
+/// 스크립트 최종 수정일: 2026-10-16
 /// 기능: 플레이어가 영역에 들어오면 현재 체크포인트로 등록한다.
 /// </summary>
 
 using UnityEngine;
+using System.Collections.Generic;
 
 public class Checkpoint : MonoBehaviour
 {
     [SerializeField] private SystemDirector systemDirector; // 체크포인트를 관리하는 객체
+    [SerializeField] private Transform safePosition; // 부활 위치
+    private readonly HashSet<Collider2D> occupants = new();
 
-    public Vector2 Position => transform.position; // 체크포인트 위치
+    public Vector2 Position
+    {
+        get
+        {
+            if (safePosition != null)
+                return safePosition.position;
+            return transform.position;
+        }
+    }
 
-    /// <summary>
-    /// 지정된 관리자가 없으면 씬에서 체크포인트 관리자를 찾는다.
-    /// </summary>
     private void Awake()
     {
         if (systemDirector == null)
@@ -32,6 +40,8 @@ public class Checkpoint : MonoBehaviour
 
         if (!enteringObject.CompareTag("Player"))
             return;
+        if (!occupants.Add(collision) || occupants.Count > 1)
+            return;
 
         if (systemDirector == null)
         {
@@ -40,5 +50,15 @@ public class Checkpoint : MonoBehaviour
         }
 
         systemDirector.SetCheckpoint(this);
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        occupants.Remove(collision);
+    }
+
+    private void OnDisable()
+    {
+        occupants.Clear();
     }
 }

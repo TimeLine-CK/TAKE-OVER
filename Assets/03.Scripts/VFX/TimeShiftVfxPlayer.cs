@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-13
+/// 스크립트 최종 수정일: 2026-10-16
 /// 기능: 시간 전환 영상을 화면 위에 재생하고 월드 교체 시점을 전달한다.
 /// </summary>
 
@@ -25,6 +25,7 @@ public sealed class TimeShiftVfxPlayer : MonoBehaviour
     private RenderTexture sourceTexture;                                        // 전환 직전 화면을 보관할 렌더 텍스처
     private Material effectMaterial;                                            // 검은 배경을 제외하고 표시할 머티리얼
     private long currentVideoFrame;                                             // 실제 출력 준비가 끝난 영상 프레임
+    private int playbackVersion;                                                // 사망 등으로 취소된 재생을 구분하는 번호
 
     /// <summary>
     /// 영상 재생에 필요한 화면 오버레이를 준비한다.
@@ -56,6 +57,7 @@ public sealed class TimeShiftVfxPlayer : MonoBehaviour
     /// </summary>
     public IEnumerator Play(Action shiftWorld)
     {
+        int version = playbackVersion;
         if (videoPlayer == null || videoImage == null || effectMaterial == null || revealMask == null)
         {
             shiftWorld?.Invoke();
@@ -65,19 +67,9 @@ public sealed class TimeShiftVfxPlayer : MonoBehaviour
         if (!videoPlayer.isPrepared)
         {
             videoPlayer.Prepare();
-            float prepareDeadline = Time.realtimeSinceStartup + 3f;
-
-            while (!videoPlayer.isPrepared && Time.realtimeSinceStartup < prepareDeadline)
-            {
-                yield return null;
-            }
-
-            if (!videoPlayer.isPrepared)
-            {
-                Debug.LogWarning("시간 전환 영상을 준비하지 못해 월드만 전환합니다.", this);
-                shiftWorld?.Invoke();
-                yield break;
-            }
+            // 영상 준비가 늦어져도 즉발 전환 입력을 지연시키지 않는다.
+            shiftWorld?.Invoke();
+            yield break;
         }
 
         yield return new WaitForEndOfFrame();
@@ -91,6 +83,8 @@ public sealed class TimeShiftVfxPlayer : MonoBehaviour
         currentVideoFrame = 0;
 
         shiftWorld?.Invoke();
+        if (version != playbackVersion || !isActiveAndEnabled)
+            yield break;
         videoImage.enabled = true;
         videoPlayer.time = 0d;
         videoPlayer.Play();
@@ -114,11 +108,16 @@ public sealed class TimeShiftVfxPlayer : MonoBehaviour
     /// </summary>
     public void StopPlayback()
     {
+        playbackVersion++;
         if (videoImage != null)
             videoImage.enabled = false;
 
         if (videoPlayer != null)
+        {
             videoPlayer.Stop();
+            if (isActiveAndEnabled)
+                videoPlayer.Prepare();
+        }
 
         currentVideoFrame = 0;
 
@@ -126,9 +125,6 @@ public sealed class TimeShiftVfxPlayer : MonoBehaviour
             effectMaterial.SetFloat(frameId, 0f);
     }
 
-    /// <summary>
-    /// 사망 등으로 비활성화되면 코루틴 종료 여부와 관계없이 이펙트를 정리한다.
-    /// </summary>
     private void OnDisable()
     {
         StopPlayback();
@@ -216,9 +212,6 @@ public sealed class TimeShiftVfxPlayer : MonoBehaviour
         videoPlayer.Prepare();
     }
 
-    /// <summary>
-    /// 실제 디코딩된 영상 프레임과 균열 마스크의 경계를 맞춘다.
-    /// </summary>
     private void OnFrameReady(VideoPlayer source, long frame)
     {
         currentVideoFrame = frame;
@@ -242,9 +235,6 @@ public sealed class TimeShiftVfxPlayer : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 사용이 끝난 런타임 렌더 텍스처를 해제한다.
-    /// </summary>
     private static void ReleaseRenderTexture(RenderTexture texture)
     {
         if (texture == null)

@@ -11,7 +11,7 @@ public class Notifier : MonoBehaviour
     public Action RenderEventAction;
 
     public void SetEvent(Action eventAction) => EventAction = eventAction;
-    public void SetRenderEvent(Action renderEventAction) => EventAction = renderEventAction;
+    public void SetRenderEvent(Action renderEventAction) => RenderEventAction = renderEventAction;
     public void InvokeEvent() => EventAction?.Invoke();
     public void InvokeRenderEvent() => RenderEventAction?.Invoke();
 }

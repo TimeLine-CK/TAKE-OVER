@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-12
+/// 스크립트 최종 수정일: 2026-10-16
 /// 기능: 범위 안의 플레이어를 감지한 뒤 회전하지 않고 포구 방향으로 투사체를 발사한다.
 /// </summary>
 
@@ -39,6 +39,7 @@ public sealed class TurretController : MonoBehaviour
 
     private Transform player;       // 추적할 플레이어
     private Animator animator;      // 터렛 애니메이션 재생기
+    private SpriteRenderer spriteRenderer; // 포탑의 좌우 반전 상태
     private Health health;          // 터렛 체력
     private Rigidbody2D body;       // 터렛 물리 본체
     private Collider2D bodyCollider; // 사망 시 비활성화할 충돌체
@@ -46,6 +47,7 @@ public sealed class TurretController : MonoBehaviour
     private float lockedTime;       // 조준 고정 후 지난 시간
     private bool isAimLocked;       // 조준 고정 여부
     private bool isDead;            // 사망 여부
+    private EnemyAwareness awareness;
 
     /// <summary>
     /// 플레이어와 기본 포신 참조를 찾는다.
@@ -53,12 +55,17 @@ public sealed class TurretController : MonoBehaviour
     private void Awake()
     {
         animator = GetComponentInChildren<Animator>();
+        spriteRenderer = GetComponentInChildren<SpriteRenderer>();
         health = GetComponent<Health>();
         body = GetComponent<Rigidbody2D>();
         bodyCollider = GetComponent<Collider2D>();
+        awareness = GetComponent<EnemyAwareness>();
 
         if (health != null)
+        {
             health.Died += Die;
+            health.Restored += RestoreState;
+        }
 
         GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
         if (playerObject != null)
@@ -76,12 +83,16 @@ public sealed class TurretController : MonoBehaviour
     private void Update()
     {
         if (isDead
-            || player == null
+            || player == null || !player.gameObject.activeInHierarchy
             || Vector2.Distance(transform.position, player.position) > DetectionRange)
         {
             ResetAim();
+            awareness?.Observe(false);
             return;
         }
+
+        if (awareness != null && !awareness.Observe(true))
+            return;
 
         if (!isAimLocked)
         {
@@ -98,9 +109,6 @@ public sealed class TurretController : MonoBehaviour
         ResetAim();
     }
 
-    /// <summary>
-    /// 공격 애니메이션을 처음부터 재생한다.
-    /// </summary>
     private void PlayAttack()
     {
         if (animator != null)
@@ -116,13 +124,28 @@ public sealed class TurretController : MonoBehaviour
     {
         if (isDead || ProjectilePrefab == null)
             return;
+        if (awareness != null && !awareness.IsReady)
+            return;
 
-        Vector2 direction = -MuzzlePoint.right;
+        Vector3 spawnPosition = MuzzlePoint.position;
+        Vector3 fireDirection = MuzzlePoint.TransformVector(Vector3.left);
+        if (spriteRenderer != null && spriteRenderer.flipX)
+        {
+            Transform spriteTransform = spriteRenderer.transform;
+            Vector3 localPosition = spriteTransform.InverseTransformPoint(spawnPosition);
+            Vector3 localDirection = spriteTransform.InverseTransformVector(fireDirection);
+            localPosition.x = -localPosition.x;
+            localDirection.x = -localDirection.x;
+            spawnPosition = spriteTransform.TransformPoint(localPosition);
+            fireDirection = spriteTransform.TransformVector(localDirection);
+        }
+        Vector2 direction = fireDirection;
         GameObject projectileObject = Instantiate(
             ProjectilePrefab,
-            MuzzlePoint.position,
+            spawnPosition,
             MuzzlePoint.rotation
         );
+        projectileObject.transform.SetParent(transform.parent, true);
 
         TurretProjectile projectile = projectileObject.GetComponent<TurretProjectile>();
         if (projectile == null)
@@ -135,7 +158,7 @@ public sealed class TurretController : MonoBehaviour
     }
 
     /// <summary>
-    /// 터렛을 사망 상태로 전환하고 사망 애니메이션이 끝난 뒤 제거한다.
+    /// 터렛의 사망 애니메이션을 재생한 뒤 복원을 위해 비활성화한다.
     /// </summary>
     private void Die()
     {
@@ -149,21 +172,56 @@ public sealed class TurretController : MonoBehaviour
             bodyCollider.enabled = false;
 
         PlayAnimation(dieStateHash);
-        Destroy(gameObject, DeathDuration);
+        awareness?.ResetDetection();
+        Invoke(nameof(HideAfterDeath), Mathf.Max(0.01f, DeathDuration));
+    }
+
+    private void HideAfterDeath()
+    {
+        gameObject.SetActive(false);
     }
 
     /// <summary>
-    /// 지정한 Animator 상태를 처음부터 재생한다.
+    /// 저장된 생사 상태를 물리와 애니메이션에 반영한다.
     /// </summary>
+    private void RestoreState()
+    {
+        CancelInvoke(nameof(HideAfterDeath));
+        isDead = health.IsDead;
+        ResetAim();
+        awareness?.ResetDetection();
+        if (body != null)
+            body.simulated = !isDead;
+        if (bodyCollider != null)
+            bodyCollider.enabled = !isDead;
+        if (isDead)
+            gameObject.SetActive(false);
+        else
+            PlayAnimation(idleStateHash);
+    }
+
+    private void OnDisable()
+    {
+        ResetAim();
+        awareness?.ResetDetection();
+    }
+
+    /// <summary>
+    /// 다른 시대에서 돌아오면 이전 공격 모션 대신 대기 상태로 시작한다.
+    /// </summary>
+    private void OnEnable()
+    {
+        ResetAim();
+        if (!isDead)
+            PlayAnimation(idleStateHash);
+    }
+
     private void PlayAnimation(int stateHash)
     {
         if (animator != null)
             animator.Play(stateHash, 0, 0f);
     }
 
-    /// <summary>
-    /// 추적과 조준 고정 시간을 초기화한다.
-    /// </summary>
     private void ResetAim()
     {
         trackingTime = 0f;
@@ -171,12 +229,12 @@ public sealed class TurretController : MonoBehaviour
         isAimLocked = false;
     }
 
-    /// <summary>
-    /// 체력 사망 이벤트 구독을 해제한다.
-    /// </summary>
     private void OnDestroy()
     {
         if (health != null)
+        {
             health.Died -= Die;
+            health.Restored -= RestoreState;
+        }
     }
 }

@@ -1,11 +1,10 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-12
+/// 스크립트 최종 수정일: 2026-10-16
 /// 기능: 조준 방향으로 짧게 뻗는 칼날 잔상과 색 분리 잔선을 메시로 생성하고 풀로 반환한다.
 /// </summary>
 
 using System.Collections.Generic;
 using UnityEngine;
-
 
 public sealed class SlashEffect : MonoBehaviour
 {
@@ -119,9 +118,6 @@ public sealed class SlashEffect : MonoBehaviour
         Draw(progress);
     }
 
-    /// <summary>
-    /// 공격 주체가 이동해도 공격 당시 방향을 유지하며 위치만 따라간다.
-    /// </summary>
     private void LateUpdate()
     {
         if (IsPlaying && target != null)
@@ -313,9 +309,6 @@ public sealed class SlashEffect : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 초반에 빠르게 펼쳐지는 ease-out 진행률을 반환한다.
-    /// </summary>
     private static float EaseOut(float value)
     {
         float inverse = 1f - value;
@@ -344,9 +337,6 @@ public sealed class SlashEffect : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    /// <summary>
-    /// 오브젝트가 제거될 때 런타임 메시를 함께 제거한다.
-    /// </summary>
     private void OnDestroy()
     {
         if (mesh != null)

@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-12
+/// 스크립트 최종 수정일: 2026-10-16
 /// 기능: 공격 순간의 카메라 흔들림과 URP 후처리 펄스를 접근성 설정에 맞춰 재생한다.
 /// </summary>
 
@@ -75,9 +75,6 @@ public sealed class CombatVfxFeedback : MonoBehaviour
         remaining = duration;
     }
 
-    /// <summary>
-    /// 실제 시간 기준으로 화면 충격의 감쇠값을 갱신한다.
-    /// </summary>
     private void LateUpdate()
     {
         if (remaining <= 0f)

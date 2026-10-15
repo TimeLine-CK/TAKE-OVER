@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-12
+/// 스크립트 최종 수정일: 2026-10-16
 /// 기능: 플레이어의 이동과 점프 상태를 Animator 파라미터와 공격 및 구르기 트리거에 반영한다.
 /// </summary>
 
@@ -18,7 +18,6 @@ public class PlayerAnimator : MonoBehaviour
     private readonly int rollHash = Animator.StringToHash("Roll");                          // 구르기 트리거 해시
     private float idleTimer;                                                                // 대기 애니메이션 전환까지 남은 시간
     private const float IdleGraceTime = 0.05f;                                              // 0.05초 동안은 달리기 상태 유지
-
 
     private void Awake()
     {
@@ -56,18 +55,12 @@ public class PlayerAnimator : MonoBehaviour
         animator.SetFloat(verticalVelocityHash, motor.Velocity.y);
     }
 
-    /// <summary>
-    /// 공격 트리거를 초기화한 뒤 다시 활성화.
-    /// </summary>
     public void PlayAttack()
     {
         animator.ResetTrigger(attackHash);
         animator.SetTrigger(attackHash);
     }
 
-    /// <summary>
-    /// 구르기 트리거를 초기화한 뒤 다시 활성화한다.
-    /// </summary>
     public void PlayRoll()
     {
         animator.ResetTrigger(rollHash);
