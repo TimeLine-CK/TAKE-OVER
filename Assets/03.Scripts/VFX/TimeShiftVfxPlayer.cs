@@ -13,7 +13,8 @@ public sealed class TimeShiftVfxPlayer : MonoBehaviour
 {
     [SerializeField] private VideoClip shiftVfx;                                // 시간 전환에 사용할 영상
     [SerializeField] private Texture2D revealMask;                              // 영상 프레임별 균열 경계 반지름
-    [SerializeField, ColorUsage(true, true)] private Color effectColor =
+    [SerializeField, ColorUsage(true, true)]
+    private Color effectColor =
         new(0.1f, 1.4f, 2.5f, 1f);                                             // 균열 이펙트 색상
 
     private static readonly int frameId = Shader.PropertyToID("_Frame");

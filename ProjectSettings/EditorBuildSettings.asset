@@ -6,47 +6,11 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/01.Scenes/01.Stage/Alpha/UR-1-A.unity
-    guid: 9e5e3bd4fa462a1478e3e235fd15910f
+    path: Assets/01.Scenes/01.Stage/Alpha/G_Pr_2.unity
+    guid: e931854b0b5e29547bfc2d0bbd7cc632
   - enabled: 1
-    path: Assets/01.Scenes/01.Stage/Alpha/UR-1-B.unity
-    guid: 99fd9b3260fc5354391cf60c9a06dcf2
-  - enabled: 1
-    path: Assets/01.Scenes/01.Stage/Alpha/UR-2-A.unity
-    guid: 50394d9acb621ca4a9ff57828fbd3b95
-  - enabled: 1
-    path: Assets/01.Scenes/01.Stage/Alpha/UR-2-B.unity
-    guid: 2f0ee82c0f5cb6d4cadad9b734515074
-  - enabled: 1
-    path: Assets/01.Scenes/01.Stage/Alpha/UR-3-A.unity
-    guid: 6d042150b1e006442be5dc4c8a4d5dbf
-  - enabled: 1
-    path: Assets/01.Scenes/01.Stage/Alpha/UR-3-B.unity
-    guid: 8e9a55f48cd13d94f92c67c374875866
-  - enabled: 1
-    path: Assets/01.Scenes/01.Stage/Alpha/UR-4-A.unity
-    guid: 250c233fca9812f43b1c34f91df52957
-  - enabled: 1
-    path: Assets/01.Scenes/01.Stage/Alpha/UR-4-B.unity
-    guid: 8b9a7162be51e2947b77b2ffca97cef6
-  - enabled: 1
-    path: Assets/01.Scenes/01.Stage/Alpha/UR-5-A.unity
-    guid: 55ae76a0105b6004aa0495570207617a
-  - enabled: 1
-    path: Assets/01.Scenes/01.Stage/Alpha/UR-5-B.unity
-    guid: f89d66fdede20e14ab7be136b358b162
-  - enabled: 1
-    path: Assets/01.Scenes/01.Stage/Alpha/UR-6-A.unity
-    guid: 4e30a49374cbd25449efbbcf1847c86a
-  - enabled: 1
-    path: Assets/01.Scenes/01.Stage/Alpha/UR-6-B.unity
-    guid: cb25af3a55778094ebf9c95da49d566f
-  - enabled: 1
-    path: Assets/01.Scenes/01.Stage/Alpha/UR-7-A.unity
-    guid: f8323a5e813acf342bb8f8f1c208d222
-  - enabled: 1
-    path: Assets/01.Scenes/01.Stage/Alpha/UR-7-B.unity
-    guid: cdf8fa12c7fd8d34f9a320a659467105
+    path: Assets/01.Scenes/01.Stage/Alpha/G_Pa_2.unity
+    guid: 48b59df739a808848b4b652f2f019ef8
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 179c506ed05dc7d40bada3d394f6b379, type: 3}

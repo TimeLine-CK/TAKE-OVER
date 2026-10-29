@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-16
+/// 스크립트 최종 수정일: 2026-10-27
 /// 기능: 조준 방향으로 짧게 뻗는 칼날 잔상과 색 분리 잔선을 메시로 생성하고 풀로 반환한다.
 /// </summary>
 
@@ -11,14 +11,21 @@ public sealed class SlashEffect : MonoBehaviour
     [SerializeField, Range(0.08f, 0.2f)] private float duration = 0.12f;         // 참격 이펙트 유지 시간
     [SerializeField, Range(4, 12)] private int segmentCount = 6;                 // 칼날을 구성하는 선분 수
     [SerializeField] private float emission = 3f;                       // HDR 발광 강도
-    [SerializeField, ColorUsage(true, true)] private Color bodyColor =
+    [SerializeField, ColorUsage(true, true)]
+    private Color bodyColor =
         new(0.35f, 0.02f, 0.55f, 0.72f);                                       // 보라색 후행 잔상 색상
-    [SerializeField, ColorUsage(true, true)] private Color bladeColor =
+    [SerializeField, ColorUsage(true, true)]
+    private Color bladeColor =
         new(0.02f, 1.2f, 2.5f, 0.95f);                                         // 청록색 칼날 외곽 색상
-    [SerializeField, ColorUsage(true, true)] private Color edgeColor =
+    [SerializeField, ColorUsage(true, true)]
+    private Color edgeColor =
         new(2.5f, 2.8f, 3f, 1f);                                               // 흰색 칼날 중심선 색상
 
-    public bool IsPlaying { get; private set; }                                 // 현재 이펙트 재생 여부
+    public bool IsPlaying
+    {
+        get;
+        private set;
+    }                                 // 현재 이펙트 재생 여부
 
     private static readonly int progressId = Shader.PropertyToID("_Progress");
     private static readonly int effectAgeId = Shader.PropertyToID("_EffectAge");
@@ -106,7 +113,7 @@ public sealed class SlashEffect : MonoBehaviour
             return;
         }
 
-        age += Time.deltaTime;
+        age += Time.unscaledDeltaTime;
         float progress = Mathf.Clamp01(age / duration);
 
         if (progress >= 1f)
@@ -138,9 +145,15 @@ public sealed class SlashEffect : MonoBehaviour
         triangles.Clear();
 
         float head = EaseOut(Mathf.Clamp01(progress / 0.16f));
-        float tail = progress < 0.2f
-            ? 0f
-            : Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.2f, 1f, progress));
+        float tail;
+        if (progress < 0.2f)
+        {
+            tail = 0f;
+        }
+        else
+        {
+            tail = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.2f, 1f, progress));
+        }
         float fade = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.32f, 1f, progress));
         float thinFade = fade * (1f - progress * 0.22f);
         float fragmentFade = thinFade * Mathf.SmoothStep(

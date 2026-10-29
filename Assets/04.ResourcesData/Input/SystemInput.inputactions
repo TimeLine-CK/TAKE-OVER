@@ -37,16 +37,6 @@
                     "priority": 0
                 },
                 {
-                    "name": "Roll",
-                    "type": "Button",
-                    "id": "43256854-75c4-4b93-9567-e5b336af934a",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false,
-                    "priority": 0
-                },
-                {
                     "name": "TimeShift",
                     "type": "Button",
                     "id": "f5f6cd07-2569-41be-adbc-d5384e95803c",
@@ -60,6 +50,16 @@
                     "name": "Interact",
                     "type": "Button",
                     "id": "1f31ba27-ca93-4265-9ebf-b3569348fe0e",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
+                    "name": "CameraPeek",
+                    "type": "Button",
+                    "id": "283a44af-c113-4314-9d18-aebd21ec132d",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -125,17 +125,6 @@
                 },
                 {
                     "name": "",
-                    "id": "1f710440-7c21-4f99-b2dd-01451446deef",
-                    "path": "<Keyboard>/leftShift",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Windows",
-                    "action": "Roll",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "902888dc-929b-4897-b7de-56befefcec97",
                     "path": "<Keyboard>/tab",
                     "interactions": "",
@@ -153,6 +142,28 @@
                     "processors": "",
                     "groups": "Windows",
                     "action": "Interact",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "30c8e8f4-6081-4c2f-90de-8e20b1d90403",
+                    "path": "<Keyboard>/leftCtrl",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Windows",
+                    "action": "CameraPeek",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e5732a6c-d894-4c15-aefb-12e05feb71a1",
+                    "path": "<Keyboard>/rightCtrl",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Windows",
+                    "action": "CameraPeek",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

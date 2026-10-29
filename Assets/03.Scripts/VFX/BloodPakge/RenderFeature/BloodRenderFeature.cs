@@ -189,8 +189,8 @@ public class BloodRenderFeature : ScriptableRendererFeature
             // --------------------------------------------------------
             // Depth
             //
-            // ÀÌ Texture ÀÚÃ¼¿¡´Â Depth¸¦ ¸¸µéÁö ¾Ê´Â´Ù.
-            // ±âÁ¸ Camera Depth¸¦ »ç¿ëÇÑ´Ù.
+            // ï¿½ï¿½ Texture ï¿½ï¿½Ã¼ï¿½ï¿½ï¿½ï¿½ Depthï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê´Â´ï¿½.
+            // ï¿½ï¿½ï¿½ï¿½ Camera Depthï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
             // --------------------------------------------------------
 
             descriptor.depthBufferBits = 0;
@@ -327,10 +327,10 @@ public class BloodRenderFeature : ScriptableRendererFeature
 
 
                 // ----------------------------------------------------
-                // ±âÁ¸ Camera Depth
+                // ï¿½ï¿½ï¿½ï¿½ Camera Depth
                 //
-                // Depth¸¦ »õ·Î »ý¼ºÇÏÁö ¾Ê°í
-                // Camera Depth¸¦ ÀÐ´Â´Ù.
+                // Depthï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê°ï¿½
+                // Camera Depthï¿½ï¿½ ï¿½Ð´Â´ï¿½.
                 // ----------------------------------------------------
 
                 if (resourceData.cameraDepthTexture.IsValid())
@@ -354,7 +354,7 @@ public class BloodRenderFeature : ScriptableRendererFeature
 
 
                 // ----------------------------------------------------
-                // Pass Culling ¹æÁö
+                // Pass Culling ï¿½ï¿½ï¿½ï¿½
                 // ----------------------------------------------------
 
                 builder.AllowPassCulling(false);

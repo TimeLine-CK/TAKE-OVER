@@ -183,14 +183,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6971055e4062654ebcd7fff3aa97b18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RobotEnemy
-  DetectionRange: 5
-  AttackRange: 1.4
-  MoveSpeed: 2
+  DetectionRange: 12
+  AttackRange: 2
+  SightObstacleMask:
+    serializedVersion: 2
+    m_Bits: 1536
+  MoveSpeed: 3
+  StopDistance: 1
+  MovementArea: {fileID: 0}
+  BoundaryMargin: 1
   AttackDamage: 50
-  AttackInterval: 1.2
-  AttackWindup: 0.25
-  AttackHeight: 1.2
+  AttackDuration: 1
+  RecoverDuration: 1
+  HitDuration: 1
+  ReturnAttackDelay: 1
   DeathDuration: 0.8
+  FlightGravity: 39.24
+  FlightDuration: 3
+  FallKillDistance: 4
+  FlightAttackDelay: 1
 --- !u!114 &4349131212993811003
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -203,7 +214,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b0b919ec123a30d49b6ed180a8aef154, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
-  MaximumHealth: 3
+  MaximumHealth: 40
 --- !u!95 &1268172981494028609
 Animator:
   serializedVersion: 7
@@ -224,7 +235,7 @@ Animator:
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
+  m_KeepAnimatorStateOnDisable: 1
   m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &4079740173821608002
 MonoBehaviour:

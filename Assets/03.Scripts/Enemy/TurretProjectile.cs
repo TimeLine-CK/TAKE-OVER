@@ -1,6 +1,6 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-16
-/// 기능: 터렛 투사체를 이동시키고 플레이어에게 피해를 적용한다.
+/// 스크립트 최종 수정일: 2026-10-27
+/// 기능: 탄환의 이동 경로를 검사하고 시대가 비활성인 동안 이동과 수명을 보존한다.
 /// </summary>
 
 using UnityEngine;
@@ -8,40 +8,101 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public sealed class TurretProjectile : MonoBehaviour
 {
-    private Vector2 direction; // 투사체 이동 방향
-    private float speed;       // 투사체 이동 속도
-    private int damage;      // 플레이어에게 적용할 피해량
+    public float RemainingLifetime => remainingLifetime;
+    private Vector2 direction;
+    private float speed;
+    private int damage;
+    private float remainingLifetime;
+    private float remainingDistance;
+    private LayerMask obstacleMask;
+    private bool initialized;
+    private bool consumed;
+    private readonly RaycastHit2D[] hits = new RaycastHit2D[32];
 
-    /// <summary>
-    /// 투사체 이동과 피해 수치를 설정한다.
-    /// </summary>
-    public void Initialize(Vector2 moveDirection, float moveSpeed, int hitDamage, float lifetime)
+    public void Initialize(Vector2 moveDirection, float moveSpeed, int hitDamage, float lifetime,
+        float maximumDistance = 12f, LayerMask terrainMask = default)
     {
         direction = moveDirection.normalized;
-        speed = moveSpeed;
+        speed = Mathf.Max(0f, moveSpeed);
         damage = hitDamage;
-        Destroy(gameObject, lifetime);
-    }
-
-    private void Update()
-    {
-        transform.position += (Vector3)(direction * speed * Time.deltaTime);
+        remainingLifetime = Mathf.Max(0f, lifetime);
+        remainingDistance = Mathf.Max(0f, maximumDistance);
+        obstacleMask = terrainMask;
+        if (obstacleMask.value == 0)
+            obstacleMask = (1 << 9) | (1 << 10);
+        initialized = true;
+        consumed = false;
+        Rigidbody2D body = GetComponent<Rigidbody2D>();
+        body.bodyType = RigidbodyType2D.Kinematic;
+        body.gravityScale = 0f;
+        body.linearVelocity = Vector2.zero;
     }
 
     /// <summary>
-    /// 플레이어 또는 지형과 충돌하면 투사체를 제거한다.
+    /// 이번 프레임의 이동 경로에서 가장 먼저 만난 플레이어나 지형만 처리한다.
     /// </summary>
-    private void OnTriggerEnter2D(Collider2D other)
+    private void Update()
     {
-        Health targetHealth = other.GetComponentInParent<Health>();
-        if (targetHealth != null && targetHealth.CompareTag("Player"))
+        if (!initialized || consumed || Time.deltaTime <= 0f || HitStopController.IsActive || Time.timeScale <= 0f)
+            return;
+        float deltaTime = Mathf.Min(Time.deltaTime, remainingLifetime);
+        float distance = Mathf.Min(speed * deltaTime, remainingDistance);
+        ContactFilter2D filter = new();
+        filter.SetLayerMask(obstacleMask.value | (1 << LayerMask.NameToLayer("Player")));
+        filter.useTriggers = true;
+        int count = Physics2D.Raycast(transform.position, direction, filter, hits, distance);
+        Collider2D nearest = null;
+        float nearestDistance = float.PositiveInfinity;
+        for (int index = 0; index < count; index++)
         {
-            targetHealth.TakeDamage(damage, DamageSource.Enemy);
-            Destroy(gameObject);
+            Collider2D candidate = hits[index].collider;
+            Health target = candidate.GetComponentInParent<Health>();
+            bool isPlayer = target != null && target.CompareTag("Player");
+            if (candidate.transform.IsChildOf(transform) || (candidate.isTrigger && !isPlayer))
+                continue;
+            if (!isPlayer && (obstacleMask.value & (1 << candidate.gameObject.layer)) == 0)
+                continue;
+            if (hits[index].distance >= nearestDistance)
+                continue;
+            nearest = candidate;
+            nearestDistance = hits[index].distance;
+        }
+        if (nearest != null)
+        {
+            transform.position += (Vector3)(direction * nearestDistance);
+            Hit(nearest);
             return;
         }
+        transform.position += (Vector3)(direction * distance);
+        remainingLifetime = Mathf.Max(0f, remainingLifetime - deltaTime);
+        remainingDistance = Mathf.Max(0f, remainingDistance - distance);
+        if (remainingLifetime <= 0f || remainingDistance <= 0f)
+            Despawn();
+    }
 
-        if (other.gameObject.layer == LayerMask.NameToLayer("Ground"))
-            Destroy(gameObject);
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (initialized && !consumed && !HitStopController.IsActive && Time.timeScale > 0f)
+            Hit(other);
+    }
+
+    private void Hit(Collider2D other)
+    {
+        Health target = other.GetComponentInParent<Health>();
+        if (target != null && target.CompareTag("Player"))
+        {
+            consumed = true;
+            target.TakeDamage(damage, DamageSource.Enemy);
+            Despawn();
+        }
+        else if (!other.isTrigger && (obstacleMask.value & (1 << other.gameObject.layer)) != 0)
+            Despawn();
+    }
+
+    private void Despawn()
+    {
+        consumed = true;
+        gameObject.SetActive(false);
+        Destroy(gameObject);
     }
 }

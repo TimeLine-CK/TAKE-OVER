@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-16
+/// 스크립트 최종 수정일: 2026-10-27
 /// 기능: 공격 순간의 카메라 흔들림과 URP 후처리 펄스를 접근성 설정에 맞춰 재생한다.
 /// </summary>
 
@@ -68,11 +68,25 @@ public sealed class CombatVfxFeedback : MonoBehaviour
             return;
         }
 
-        direction = attackDirection.sqrMagnitude > 0.001f
-            ? attackDirection.normalized
-            : Vector2.right;
+        direction = Vector2.right;
+        if (attackDirection.sqrMagnitude > 0.001f)
+        {
+            direction = attackDirection.normalized;
+        }
         strength = Mathf.Clamp01(amount);
         remaining = duration;
+    }
+
+    public void Clear()
+    {
+        remaining = 0f;
+        if (volume != null)
+            volume.weight = 0f;
+        if (isShakeApplied && targetCamera != null)
+        {
+            targetCamera.transform.position = cameraPosition;
+            isShakeApplied = false;
+        }
     }
 
     private void LateUpdate()

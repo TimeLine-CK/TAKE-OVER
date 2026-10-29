@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-16
+/// 스크립트 최종 수정일: 2026-10-28
 /// 기능: 플레이어의 공격 입력, 타격 판정, 공격 애니메이션과 이펙트를 처리한다.
 /// </summary>
 
@@ -28,6 +28,7 @@ public sealed class PlayerCombat : MonoBehaviour
     private float attackDebugRemaining;                                         // 공격 범위를 표시할 남은 시간
     private Vector2 attackAimDirection = Vector2.right;                         // 현재 일반 공격 조준 방향
     private SlashEffect[] slashEffects;                                         // 재사용할 베기 이펙트 목록
+    private int consecutiveHits;
 
     /// <summary>
     /// 공격 처리에 필요한 플레이어 컴포넌트를 초기화한다.
@@ -55,6 +56,8 @@ public sealed class PlayerCombat : MonoBehaviour
     /// </summary>
     private void Update()
     {
+        if (HitStopController.IsActive || Time.timeScale <= 0f)
+            return;
         if (inputReader.ConsumeAttackPressed())
         {
             if (timeShift == null || !timeShift.IsPreparing)
@@ -73,12 +76,13 @@ public sealed class PlayerCombat : MonoBehaviour
     /// </summary>
     private void Attack(Vector2 direction)
     {
-        if (direction.sqrMagnitude < 0.0001f)
+        if (Mathf.Abs(direction.x) < 0.0001f)
         {
             direction = Vector2.right * motor.FacingDirection;
         }
 
-        attackAimDirection = direction.normalized;
+        attackAimDirection = Vector2.right * Mathf.Sign(direction.x);
+        motor.ApplyFacing(attackAimDirection.x);
 
         animator.PlayAttack();
 
@@ -92,7 +96,7 @@ public sealed class PlayerCombat : MonoBehaviour
     }
 
     /// <summary>
-    /// 현재 마우스 화면 좌표를 플레이어 기준 월드 조준 방향으로 변환한다.
+    /// 마우스가 플레이어의 어느 쪽에 있는지 확인해 좌우 공격 방향을 정한다.
     /// </summary>
     private Vector2 GetPointerAimDirection()
     {
@@ -107,9 +111,9 @@ public sealed class PlayerCombat : MonoBehaviour
         }
 
         Vector2 pointerWorld = mainCamera.ScreenToWorldPoint(inputReader.PointerPosition);
-        Vector2 direction = pointerWorld - body.position;
-        if (direction.sqrMagnitude > 0.0001f)
-            return direction.normalized;
+        float horizontalOffset = pointerWorld.x - body.position.x;
+        if (Mathf.Abs(horizontalOffset) > 0.0001f)
+            return Vector2.right * Mathf.Sign(horizontalOffset);
 
         return Vector2.right * motor.FacingDirection;
     }
@@ -127,14 +131,44 @@ public sealed class PlayerCombat : MonoBehaviour
         );
 
         if (hit == null)
+        {
+            consecutiveHits = 0;
             return;
+        }
         RollingCarrier carrier = hit.GetComponentInParent<RollingCarrier>();
         if (carrier != null)
         {
+            consecutiveHits = 0;
             carrier.Hit(attackAimDirection);
             return;
         }
-        hit.GetComponentInParent<Health>()?.TakeDamage(AttackDamage, DamageSource.Player);
+        Health target = hit.GetComponentInParent<Health>();
+        if (target == null || target.IsDead)
+            return;
+        consecutiveHits++;
+        HitStopType hitType = HitStopType.Normal;
+        if (consecutiveHits >= 3)
+        {
+            hitType = HitStopType.Strong;
+            consecutiveHits = 0;
+        }
+        target.TakeDamage(AttackDamage, DamageSource.Player, hitType);
+    }
+
+    public void ClearEffects()
+    {
+        if (slashEffects != null)
+            foreach (SlashEffect effect in slashEffects)
+                if (effect != null && effect.IsPlaying)
+                    effect.Clear();
+        vfxFeedback?.Clear();
+        attackDebugRemaining = 0f;
+    }
+
+    private void OnDisable()
+    {
+        consecutiveHits = 0;
+        ClearEffects();
     }
 
     /// <summary>
@@ -161,8 +195,13 @@ public sealed class PlayerCombat : MonoBehaviour
         Vector2 offset = attackAimDirection * slashEffectOffset.x * scale.x
             + perpendicular * slashEffectOffset.y * scale.y;
 
-        int sortingLayer = playerRenderer != null ? playerRenderer.sortingLayerID : 0;
-        int sortingOrder = playerRenderer != null ? playerRenderer.sortingOrder - 1 : 0;
+        int sortingLayer = 0;
+        int sortingOrder = 0;
+        if (playerRenderer != null)
+        {
+            sortingLayer = playerRenderer.sortingLayerID;
+            sortingOrder = playerRenderer.sortingOrder - 1;
+        }
 
         effect.Play(
             transform,
@@ -270,7 +309,11 @@ public sealed class PlayerCombat : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         PlayerMotor currentMotor = GetComponent<PlayerMotor>();
-        int direction = currentMotor != null ? currentMotor.FacingDirection : 1;
+        int direction = 1;
+        if (currentMotor != null)
+        {
+            direction = currentMotor.FacingDirection;
+        }
         Vector2 attackCenter = (Vector2)transform.position
             + Vector2.right * direction * collideBoxSize.x * 0.5f;
 

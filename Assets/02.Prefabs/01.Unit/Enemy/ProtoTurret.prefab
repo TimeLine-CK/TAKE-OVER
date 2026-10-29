@@ -398,12 +398,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TurretController
   MuzzlePoint: {fileID: 671683804563834667}
   ProjectilePrefab: {fileID: 7392691073429170655, guid: 2794fe49f231904419fbac1ecf1de5d5, type: 3}
-  DetectionRange: 10
-  TrackingDuration: 0.6
-  LockedAimDuration: 0.2
-  ProjectileSpeed: 18
-  ProjectileDamage: 25
-  ProjectileLifetime: 4
+  DetectionRange: 12
+  DetectionHeight: 2
+  SightObstacleMask:
+    serializedVersion: 2
+    m_Bits: 1536
+  BurstCount: 3
+  ShotInterval: 1
+  LastShotWait: 1
+  RecoverDuration: 1
+  HitDuration: 1
+  ProjectileSpeed: 12
+  ProjectileDamage: 8
+  ProjectileLifetime: 1
+  ProjectileMaximumDistance: 12
   DeathDuration: 0.7
 --- !u!95 &5694101949031683683
 Animator:
@@ -439,7 +447,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b0b919ec123a30d49b6ed180a8aef154, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
-  MaximumHealth: 1
+  MaximumHealth: 40
 --- !u!114 &8078553999676830615
 MonoBehaviour:
   m_ObjectHideFlags: 0

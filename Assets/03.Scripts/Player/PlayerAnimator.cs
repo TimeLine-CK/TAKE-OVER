@@ -1,6 +1,6 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-16
-/// 기능: 플레이어의 이동과 점프 상태를 Animator 파라미터와 공격 및 구르기 트리거에 반영한다.
+/// 스크립트 최종 수정일: 2026-10-28
+/// 기능: 플레이어의 이동과 점프 상태를 Animator 파라미터와 공격 트리거에 반영한다.
 /// </summary>
 
 using UnityEngine;
@@ -15,7 +15,6 @@ public class PlayerAnimator : MonoBehaviour
     private readonly int speedHash = Animator.StringToHash("Speed");                        // 이동 속도 파라미터 해시
     private readonly int verticalVelocityHash = Animator.StringToHash("VerticalVelocity");  // 수직 속도 파라미터 해시
     private readonly int attackHash = Animator.StringToHash("Attack");                      // 공격 트리거 해시
-    private readonly int rollHash = Animator.StringToHash("Roll");                          // 구르기 트리거 해시
     private float idleTimer;                                                                // 대기 애니메이션 전환까지 남은 시간
     private const float IdleGraceTime = 0.05f;                                              // 0.05초 동안은 달리기 상태 유지
 
@@ -44,9 +43,11 @@ public class PlayerAnimator : MonoBehaviour
         }
         else
         {
-            float deltaTime = animator.updateMode == AnimatorUpdateMode.UnscaledTime
-                ? Time.unscaledDeltaTime
-                : Time.deltaTime;
+            float deltaTime = Time.deltaTime;
+            if (animator.updateMode == AnimatorUpdateMode.UnscaledTime)
+            {
+                deltaTime = Time.unscaledDeltaTime;
+            }
             idleTimer -= deltaTime;
         }
 
@@ -59,12 +60,6 @@ public class PlayerAnimator : MonoBehaviour
     {
         animator.ResetTrigger(attackHash);
         animator.SetTrigger(attackHash);
-    }
-
-    public void PlayRoll()
-    {
-        animator.ResetTrigger(rollHash);
-        animator.SetTrigger(rollHash);
     }
 
 }

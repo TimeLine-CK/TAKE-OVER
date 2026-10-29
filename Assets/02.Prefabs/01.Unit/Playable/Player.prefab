@@ -271,8 +271,6 @@ MonoBehaviour:
   maximumFallSpeed: 24
   jumpBufferDuration: 0.08
   coyoteTimeDuration: 0.06
-  rollSpeed: 14
-  rollDuration: 0.25
   ceilingCheckDistance: 0.04
   groundCheckDistance: 0.05
   groundCheckWidthReduction: 0.08
@@ -309,7 +307,7 @@ MonoBehaviour:
   targetMask:
     serializedVersion: 2
     m_Bits: 3072
-  AttackDamage: 1
+  AttackDamage: 10
   animator: {fileID: 4698003367037688723}
   slashEffectPrefab: {fileID: 2181418731129853739, guid: 3d19280d18685bc448f017f3126c04b1, type: 3}
   slashEffectOffset: {x: 0.4, y: 0.05}

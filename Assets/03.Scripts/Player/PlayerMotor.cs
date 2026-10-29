@@ -1,6 +1,6 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-16
-/// 기능: 플레이어의 수평 이동, 점프, 구르기, 중력, 접지와 모서리 보정을 처리한다.
+/// 스크립트 최종 수정일: 2026-10-28
+/// 기능: 플레이어의 수평 이동, 점프, 중력, 접지와 모서리 보정을 처리한다.
 /// </summary>
 
 using System;
@@ -34,10 +34,6 @@ public sealed class PlayerMotor : MonoBehaviour
     [SerializeField] private float jumpBufferDuration = 0.08f;  // 선입력 허용 시간
     [SerializeField] private float coyoteTimeDuration = 0.06f;  // 낭떠러지 점프 허용 시간
 
-    [Header("Roll")]
-    [SerializeField] private float rollSpeed = 14f;             // 구르기 이동 속도
-    [SerializeField] private float rollDuration = 0.25f;        // 구르기 유지 시간
-
     [Header("Ceiling Check")]
     [SerializeField] private float ceilingCheckDistance = 0.04f; // 상승 중 천장 확인 거리
 
@@ -57,7 +53,6 @@ public sealed class PlayerMotor : MonoBehaviour
     private Rigidbody2D body;                                                   // 물리 이동을 적용할 리지드바디
     private Collider2D bodyCollider;                                            // 접지와 충돌 검사에 사용할 콜라이더
     private PlayerInputReader inputReader;                                      // 플레이어 입력을 제공하는 컴포넌트
-    private PlayerAnimator playerAnimator;                                      // 구르기 애니메이션을 실행할 컴포넌트
     private CameraFollow2D cameraFollow;                                        // 이동 경계를 제공하는 카메라
     private readonly RaycastHit2D[] groundHits = new RaycastHit2D[4];           // 접지 검사 결과 버퍼
     private readonly RaycastHit2D[] ceilingHits = new RaycastHit2D[4];          // 천장 검사 결과 버퍼
@@ -73,8 +68,6 @@ public sealed class PlayerMotor : MonoBehaviour
     private float coyoteTimeRemaining;                                          // 남아 있는 코요테 타임
     private float verticalVelocity;                                             // 직접 계산하는 수직 속도
     private bool hasJumpedThisPhysicsTick;                                      // 현재 물리 틱에서 점프했는지 여부
-    private float rollRemaining;                                                // 구르기 남은 시간
-    private float rollHorizontalVelocity;                                       // 구르기 중 유지할 수평 속도
 
     /// <summary>
     /// 컴포넌트와 접지 필터, 시각 요소의 기본 상태를 초기화.
@@ -84,7 +77,6 @@ public sealed class PlayerMotor : MonoBehaviour
         body = GetComponent<Rigidbody2D>();
         bodyCollider = GetComponent<Collider2D>();
         inputReader = GetComponent<PlayerInputReader>();
-        playerAnimator = GetComponentInChildren<PlayerAnimator>();
         if (Camera.main != null)
             cameraFollow = Camera.main.GetComponent<CameraFollow2D>();
 
@@ -113,7 +105,7 @@ public sealed class PlayerMotor : MonoBehaviour
     }
 
     /// <summary>
-    /// 부활할 때 남아 있는 이동 속도와 점프 및 구르기 상태를 초기화한다.
+    /// 부활할 때 남아 있는 이동 속도와 점프 상태를 초기화한다.
     /// </summary>
     public void ResetMovement()
     {
@@ -122,8 +114,6 @@ public sealed class PlayerMotor : MonoBehaviour
         verticalVelocity = 0f;
         jumpBufferRemaining = 0f;
         coyoteTimeRemaining = 0f;
-        rollRemaining = 0f;
-        rollHorizontalVelocity = 0f;
         hasJumpedThisPhysicsTick = false;
         isGrounded = false;
     }
@@ -148,22 +138,12 @@ public sealed class PlayerMotor : MonoBehaviour
         UpdateGroundState(deltaTime);
         UpdateJumpBuffer(isJumpPressed, deltaTime);
 
-        if (inputReader.ConsumeRollPressed())
-            TryRoll(horizontalInput);
-
         Vector2 velocity = body.linearVelocity;
         velocity.y = verticalVelocity;
 
-        if (rollRemaining > 0f)
-        {
-            velocity.x = rollHorizontalVelocity;
-        }
-        else
-        {
-            ApplyFacing(horizontalInput);
-            ApplyHorizontalMovement(ref velocity, horizontalInput, deltaTime);
-            TryJump(ref velocity);
-        }
+        ApplyFacing(horizontalInput);
+        ApplyHorizontalMovement(ref velocity, horizontalInput, deltaTime);
+        TryJump(ref velocity);
 
         StopRisingAtCeiling(ref velocity);
         float verticalDistance = ApplyGravity(ref velocity, deltaTime);
@@ -174,7 +154,6 @@ public sealed class PlayerMotor : MonoBehaviour
         ApplyCameraBounds(ref velocity, deltaTime);
 
         body.linearVelocity = velocity;
-        UpdateRoll(deltaTime);
     }
 
     /// <summary>
@@ -212,22 +191,6 @@ public sealed class PlayerMotor : MonoBehaviour
         if (!Mathf.Approximately(velocity.y, limitedVelocity.y))
             verticalVelocity = 0f;
         velocity = limitedVelocity;
-    }
-
-    /// <summary>
-    /// 지상에서 지정한 방향으로 구르기를 시작한다.
-    /// </summary>
-    private void TryRoll(float horizontalInput)
-    {
-        if (!isGrounded || rollRemaining > 0f)
-            return;
-
-        if (Mathf.Abs(horizontalInput) > 0.01f)
-            facingDirection = (int)Mathf.Sign(horizontalInput);
-        rollHorizontalVelocity = facingDirection * Mathf.Max(0f, rollSpeed);
-        rollRemaining = Mathf.Max(0.01f, rollDuration);
-        ApplyVisualFacing();
-        playerAnimator?.PlayRoll();
     }
 
     /// <summary>
@@ -301,14 +264,6 @@ public sealed class PlayerMotor : MonoBehaviour
             0f,
             jumpBufferRemaining - deltaTime
         );
-    }
-
-    private void UpdateRoll(float deltaTime)
-    {
-        if (rollRemaining <= 0f)
-            return;
-
-        rollRemaining = Mathf.Max(0f, rollRemaining - deltaTime);
     }
 
     /// <summary>
@@ -494,7 +449,7 @@ public sealed class PlayerMotor : MonoBehaviour
 
         StopRisingFromCollision(collision);
 
-        if (rollRemaining > 0f || hasJumpedThisPhysicsTick || jumpBufferRemaining <= 0f)
+        if (hasJumpedThisPhysicsTick || jumpBufferRemaining <= 0f)
         {
             return;
         }
@@ -559,7 +514,7 @@ public sealed class PlayerMotor : MonoBehaviour
     /// <summary>
     /// 수평 입력에 맞춰 바라보는 방향을 갱신한다.
     /// </summary>
-    private void ApplyFacing(float horizontalInput)
+    public void ApplyFacing(float horizontalInput)
     {
         if (horizontalInput > 0.01f)
         {
