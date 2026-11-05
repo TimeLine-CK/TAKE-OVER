@@ -93,7 +93,7 @@ SpriteRenderer:
   m_SortingLayer: 2
   m_SortingOrder: 10
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -3612663519414665389, guid: b6e8de6f8ec6b5048a0623859f88d146, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 7433db6eba5418e46bd0b53b48e021a3, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -167,8 +167,8 @@ BoxCollider2D:
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1.375}
+    pivot: {x: 0.54, y: 0.37}
+    oldSize: {x: 1.9543726, y: 1.9543726}
     newSize: {x: 1, y: 1.375}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -381,6 +381,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e93dd889bf36ad249ba2df5bb94e6f4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TimeShiftVfxPlayer
-  shiftVfx: {fileID: 32900000, guid: 6c2359ee01beeec4697f3393f799575b, type: 3}
-  revealMask: {fileID: 2800000, guid: 77b20471cbcc7cd43bac7808e7f7445e, type: 3}
-  effectColor: {r: 0.1, g: 1.4, b: 2.5, a: 1}
+  shiftVfx: {fileID: 32900000, guid: 95ee8629359c14842bf150666206a185, type: 3}

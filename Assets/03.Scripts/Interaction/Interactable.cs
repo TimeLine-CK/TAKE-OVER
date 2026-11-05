@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-26
+/// 스크립트 최종 수정일: 2026-11-05
 /// 기능: 장치의 상호작용 안내와 조작 가능한 시대를 정의한다.
 /// </summary>
 
@@ -54,6 +54,10 @@ public class Interactable : MonoBehaviour
     }
 
     public virtual void HoldInteract(PlayerInteractor player, float deltaTime)
+    {
+    }
+
+    public virtual void EndHoldInteract(PlayerInteractor player)
     {
     }
 }

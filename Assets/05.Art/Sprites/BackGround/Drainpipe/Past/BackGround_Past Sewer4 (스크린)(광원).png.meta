@@ -1,0 +1,429 @@
+fileFormatVersion: 2
+guid: 9458b52d398872b4799314e0fb9eb4f0
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -2737677412413867095
+    second: "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_0"
+  - first:
+      213: 3751746850479643133
+    second: "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_1"
+  - first:
+      213: -5152319017436785985
+    second: "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_2"
+  - first:
+      213: -3591770412066360468
+    second: "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_3"
+  - first:
+      213: -827705561216224882
+    second: "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_4"
+  - first:
+      213: -5999910547983752328
+    second: "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_5"
+  - first:
+      213: 8466180214038505739
+    second: "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_6"
+  - first:
+      213: 2408547380661262227
+    second: "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_7"
+  - first:
+      213: -1674260415045508859
+    second: "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_8"
+  - first:
+      213: -8429292246048199973
+    second: "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_9"
+  - first:
+      213: -5890388250782152427
+    second: "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_10"
+  - first:
+      213: 3407082936068922131
+    second: "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_11"
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 200
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_0"
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 2846
+        width: 239
+        height: 239
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9abf573f5e0d10ad0800000000000000
+      internalID: -2737677412413867095
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_1"
+      rect:
+        serializedVersion: 2
+        x: 1830
+        y: 2874
+        width: 193
+        height: 193
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: df9970602e1e01430800000000000000
+      internalID: 3751746850479643133
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_2"
+      rect:
+        serializedVersion: 2
+        x: 3505
+        y: 2875
+        width: 201
+        height: 201
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fb2d03cd6294f78b0800000000000000
+      internalID: -5152319017436785985
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_3"
+      rect:
+        serializedVersion: 2
+        x: 114
+        y: 1081
+        width: 242
+        height: 279
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c63b60a17d7772ec0800000000000000
+      internalID: -3591770412066360468
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_4"
+      rect:
+        serializedVersion: 2
+        x: 1696
+        y: 944
+        width: 242
+        height: 277
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e81771d6d266384f0800000000000000
+      internalID: -827705561216224882
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_5"
+      rect:
+        serializedVersion: 2
+        x: 1819
+        y: 1211
+        width: 8
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8732f4f35290cbca0800000000000000
+      internalID: -5999910547983752328
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_6"
+      rect:
+        serializedVersion: 2
+        x: 3637
+        y: 1186
+        width: 78
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b09a4368c0aed7570800000000000000
+      internalID: 8466180214038505739
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_7"
+      rect:
+        serializedVersion: 2
+        x: 3561
+        y: 937
+        width: 245
+        height: 265
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3971309e411ec6120800000000000000
+      internalID: 2408547380661262227
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_8"
+      rect:
+        serializedVersion: 2
+        x: 3686
+        y: 1177
+        width: 12
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 501e6bbe505d3c8e0800000000000000
+      internalID: -1674260415045508859
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_9"
+      rect:
+        serializedVersion: 2
+        x: 3695
+        y: 1184
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bdaa75ecc53250b80800000000000000
+      internalID: -8429292246048199973
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_10"
+      rect:
+        serializedVersion: 2
+        x: 1697
+        y: 1083
+        width: 9
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 519cef23813214ea0800000000000000
+      internalID: -5890388250782152427
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_11"
+      rect:
+        serializedVersion: 2
+        x: 3565
+        y: 1064
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 31bdeacf0e3684f20800000000000000
+      internalID: 3407082936068922131
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_0": -2737677412413867095
+      "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_1": 3751746850479643133
+      "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_10": -5890388250782152427
+      "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_11": 3407082936068922131
+      "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_2": -5152319017436785985
+      "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_3": -3591770412066360468
+      "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_4": -827705561216224882
+      "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_5": -5999910547983752328
+      "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_6": 8466180214038505739
+      "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_7": 2408547380661262227
+      "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_8": -1674260415045508859
+      "BackGround_Past Sewer4 (\uC2A4\uD06C\uB9B0)(\uAD11\uC6D0)_9": -8429292246048199973
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

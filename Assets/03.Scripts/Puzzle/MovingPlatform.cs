@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-29
+/// 스크립트 최종 수정일: 2026-11-05
 /// 기능: 과거에서 두 지점 사이를 왕복하고 현재에서는 마지막 위치에 멈추며 탑승자를 함께 이동시킨다.
 /// </summary>
 
@@ -83,7 +83,7 @@ public sealed class MovingPlatform : MonoBehaviour
         Vector2 movement = next - body.position;
         if (movement.sqrMagnitude > 0f)
         {
-            MoveRiders(movement);
+            MoveRiders(bodyCollider, body, movement, previousVelocity, riders);
             body.MovePosition(next);
         }
         else
@@ -97,7 +97,8 @@ public sealed class MovingPlatform : MonoBehaviour
     /// <summary>
     /// 플랫폼 위에 서 있는 물리 객체를 옮기며 점프해 올라가는 대상은 제외한다.
     /// </summary>
-    private void MoveRiders(Vector2 movement)
+    public static void MoveRiders(Collider2D bodyCollider, Rigidbody2D body, Vector2 movement,
+        Vector2 previousVelocity, Collider2D[] riders)
     {
         Bounds bounds = bodyCollider.bounds;
         ContactFilter2D filter = ContactFilter2D.noFilter;
@@ -108,7 +109,10 @@ public sealed class MovingPlatform : MonoBehaviour
         for (int index = 0; index < count; index++)
         {
             Rigidbody2D rider = riders[index].attachedRigidbody;
-            if (rider == null || rider == body || rider.transform.IsChildOf(transform))
+            if (rider == null || rider == body || rider.transform.IsChildOf(body.transform)
+                || rider.GetComponent<MovingPlatform>() != null || rider.GetComponent<FloatingPlatform>() != null)
+                continue;
+            if (riders[index].bounds.min.y < bounds.max.y - 0.08f)
                 continue;
             PlayerMotor motor = rider.GetComponent<PlayerMotor>();
             if (motor != null)

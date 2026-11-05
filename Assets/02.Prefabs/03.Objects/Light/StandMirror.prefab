@@ -423,7 +423,7 @@ MonoBehaviour:
       m_Calls: []
   mirrorId: IR_Hanging_01
   rotationPivot: {fileID: 7128159550343824359}
-  rotationSpeed: 35
+  rotationStep: 1
   isFixed: 0
 --- !u!58 &7972486252820776909
 CircleCollider2D:

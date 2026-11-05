@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-16
+/// 스크립트 최종 수정일: 2026-11-05
 /// 기능: 시간 전환 영상을 화면 위에 재생하고 월드 교체 시점을 전달한다.
 /// </summary>
 
@@ -12,12 +12,7 @@ using UnityEngine.Video;
 public sealed class TimeShiftVfxPlayer : MonoBehaviour
 {
     [SerializeField] private VideoClip shiftVfx;                                // 시간 전환에 사용할 영상
-    [SerializeField] private Texture2D revealMask;                              // 영상 프레임별 균열 경계 반지름
-    [SerializeField, ColorUsage(true, true)]
-    private Color effectColor =
-        new(0.1f, 1.4f, 2.5f, 1f);                                             // 균열 이펙트 색상
-
-    private static readonly int frameId = Shader.PropertyToID("_Frame");
+    private static readonly int worldBlendId = Shader.PropertyToID("_WorldBlend");
     private static readonly int videoTextureId = Shader.PropertyToID("_VideoTex");
 
     private VideoPlayer videoPlayer;                                            // 전환 영상을 재생할 플레이어
@@ -54,12 +49,12 @@ public sealed class TimeShiftVfxPlayer : MonoBehaviour
     }
 
     /// <summary>
-    /// 현재 화면을 보관하고 목적 시점을 중앙부터 펼치며 전환 영상을 재생한다.
+    /// 현재 화면을 보관하고 영상이 밝아지는 구간에 목적 시점으로 부드럽게 전환한다.
     /// </summary>
     public IEnumerator Play(Action shiftWorld)
     {
         int version = playbackVersion;
-        if (videoPlayer == null || videoImage == null || effectMaterial == null || revealMask == null)
+        if (videoPlayer == null || videoImage == null || effectMaterial == null)
         {
             shiftWorld?.Invoke();
             yield break;
@@ -80,14 +75,13 @@ public sealed class TimeShiftVfxPlayer : MonoBehaviour
         effectMaterial.SetTexture("_SourceTex", sourceTexture);
         effectMaterial.SetFloat("_SourceFlipY", SystemInfo.graphicsUVStartsAtTop ? 1f : 0f);
         effectMaterial.SetTexture(videoTextureId, renderTexture);
-        effectMaterial.SetFloat(frameId, 0f);
+        effectMaterial.SetFloat(worldBlendId, 0f);
         currentVideoFrame = 0;
 
         shiftWorld?.Invoke();
         if (version != playbackVersion || !isActiveAndEnabled)
             yield break;
         videoImage.enabled = true;
-        videoPlayer.time = 0d;
         videoPlayer.Play();
 
         float duration = Mathf.Max(0.01f, (float)shiftVfx.length);
@@ -123,7 +117,7 @@ public sealed class TimeShiftVfxPlayer : MonoBehaviour
         currentVideoFrame = 0;
 
         if (effectMaterial != null)
-            effectMaterial.SetFloat(frameId, 0f);
+            effectMaterial.SetFloat(worldBlendId, 0f);
     }
 
     private void OnDisable()
@@ -183,8 +177,6 @@ public sealed class TimeShiftVfxPlayer : MonoBehaviour
         }
 
         effectMaterial = new Material(shader);
-        effectMaterial.SetColor("_EffectColor", effectColor);
-        effectMaterial.SetTexture("_RevealMask", revealMask);
         videoImage.material = effectMaterial;
     }
 
@@ -206,7 +198,7 @@ public sealed class TimeShiftVfxPlayer : MonoBehaviour
         videoPlayer.renderMode = VideoRenderMode.RenderTexture;
         videoPlayer.targetTexture = renderTexture;
         videoPlayer.clip = shiftVfx;
-        videoPlayer.skipOnDrop = true;
+        videoPlayer.skipOnDrop = false;
         videoPlayer.timeUpdateMode = VideoTimeUpdateMode.UnscaledGameTime;
         videoPlayer.sendFrameReadyEvents = true;
         videoPlayer.frameReady += OnFrameReady;
@@ -216,7 +208,9 @@ public sealed class TimeShiftVfxPlayer : MonoBehaviour
     private void OnFrameReady(VideoPlayer source, long frame)
     {
         currentVideoFrame = frame;
-        effectMaterial.SetFloat(frameId, frame);
+        float progress = frame / Mathf.Max(1f, (float)shiftVfx.frameCount - 1f);
+        float blend = Mathf.InverseLerp(0.05f, 0.3f, progress);
+        effectMaterial.SetFloat(worldBlendId, Mathf.SmoothStep(0f, 1f, blend));
     }
 
     /// <summary>

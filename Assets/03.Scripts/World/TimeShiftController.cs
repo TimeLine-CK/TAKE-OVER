@@ -1,9 +1,10 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-27
+/// 스크립트 최종 수정일: 2026-11-04
 /// 기능: 현재와 과거 월드를 준비하고 입력에 따라 플레이어의 시점을 전환한다.
 /// </summary>
 
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -27,6 +28,8 @@ public sealed class TimeShiftController : MonoBehaviour
     public bool IsReady => isReady;                                       // 시대별 월드 준비 완료 여부
     public event System.Action WorldsReady;                               // 두 시대의 준비가 끝났을 때 호출하는 이벤트
 
+    public event System.Action<TimeFlag> WorldChanged;                     // 시대가 변경되면 외형을 갱신하는 이벤트
+
     private TimeFlag currentFlag = TimeFlag.Present;                        // 현재 활성화된 시점
     private TimeFlagWolrdRoot pastWorld;                                    // 과거 시점의 월드 루트
     private bool isReady;                                                   // 과거 씬 준비 완료 여부
@@ -37,6 +40,7 @@ public sealed class TimeShiftController : MonoBehaviour
     private TimeWorldPreview pastPreview;                                  // 과거 지형의 외곽 미리보기
     private Health playerHealth;                                          // 끼임 사망을 처리할 체력 컴포넌트
     private readonly Collider2D[] obstacleHits = new Collider2D[16];        // 목적 시대의 장애물 검사 결과
+    private readonly HashSet<Collider2D> existingObstacles = new();         // 전환 전부터 접촉하던 지형
 
     public TimeFlagWolrdRoot GetWorld(TimeFlag flag)
     {
@@ -60,6 +64,7 @@ public sealed class TimeShiftController : MonoBehaviour
         currentFlag = flag;
         presentWorld.SetWorldActive(flag == TimeFlag.Present);
         pastWorld.SetWorldActive(flag == TimeFlag.Past);
+        WorldChanged?.Invoke(currentFlag);
         UpdatePreviews();
         Physics2D.SyncTransforms();
     }
@@ -222,6 +227,7 @@ public sealed class TimeShiftController : MonoBehaviour
             Debug.LogWarning("TimeShiftController에 점선 미리보기 머티리얼이 설정되지 않았습니다.", this);
         }
         isReady = true;
+        WorldChanged?.Invoke(currentFlag);
         UpdatePreviews();
         WorldsReady?.Invoke();
     }
@@ -250,10 +256,12 @@ public sealed class TimeShiftController : MonoBehaviour
 
         HitStopController.Cancel();
         GetComponent<PlayerCombat>()?.ClearEffects();
+        CaptureExistingObstacles();
         currentWorld.SetWorldActive(false);
         destinationWorld.SetWorldActive(true);
         currentFlag = destinationFlag;
         isPreparing = false;
+        WorldChanged?.Invoke(currentFlag);
         UpdatePreviews();
         Physics2D.SyncTransforms();
 
@@ -267,9 +275,36 @@ public sealed class TimeShiftController : MonoBehaviour
     }
 
     /// <summary>
-    /// 플레이어 콜라이더보다 조금 작은 영역으로 목적지의 장애물을 검사한다.
+    /// 시대를 바꾸기 직전에 이미 접촉 중인 지형을 보관한다.
+    /// </summary>
+    private void CaptureExistingObstacles()
+    {
+        Physics2D.SyncTransforms();
+        existingObstacles.Clear();
+        int count = FindOverlappingObstacles();
+        for (int index = 0; index < count; index++)
+            existingObstacles.Add(obstacleHits[index]);
+    }
+
+    /// <summary>
+    /// 전환 후 새로 겹친 지형에 몸이 끼었는지 검사한다.
     /// </summary>
     private bool IsDestinationBlocked()
+    {
+        int count = FindOverlappingObstacles();
+        for (int index = 0; index < count; index++)
+        {
+            Collider2D obstacle = obstacleHits[index];
+            if (obstacle == playerCollider || obstacle.transform.IsChildOf(transform)
+                || existingObstacles.Contains(obstacle))
+                continue;
+            if (playerCollider.Distance(obstacle).distance < -0.02f)
+                return true;
+        }
+        return false;
+    }
+
+    private int FindOverlappingObstacles()
     {
         Bounds bounds = playerCollider.bounds;
         Vector2 checkSize = new(
@@ -280,16 +315,7 @@ public sealed class TimeShiftController : MonoBehaviour
         ContactFilter2D filter = new ContactFilter2D();
         filter.SetLayerMask(destinationObstacleMask);
         filter.useTriggers = false;
-        int count = Physics2D.OverlapBox(bounds.center, checkSize, 0f, filter, obstacleHits);
-        for (int index = 0; index < count; index++)
-        {
-            Collider2D obstacle = obstacleHits[index];
-            if (obstacle == playerCollider || obstacle.transform.IsChildOf(transform))
-                continue;
-            if (playerCollider.Distance(obstacle).distance < -0.02f)
-                return true;
-        }
-        return false;
+        return Physics2D.OverlapBox(bounds.center, checkSize, 0f, filter, obstacleHits);
     }
 
     private void UpdatePreviews()

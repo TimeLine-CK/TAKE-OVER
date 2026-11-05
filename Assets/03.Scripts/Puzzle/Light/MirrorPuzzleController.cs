@@ -1,6 +1,6 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-29
-/// 기능: 시대별 거울의 각도를 공유하고 사망 후 처음 정해진 각도로 되돌린다.
+/// 스크립트 최종 수정일: 2026-11-02
+/// 기능: 시대별 거울의 각도를 공유하고 조절한 각도와 연결 상태를 관리한다.
 /// </summary>
 
 using System.Collections.Generic;
@@ -58,9 +58,10 @@ public sealed class MirrorPuzzleController : MonoBehaviour
     /// </summary>
     public void Initialize()
     {
-        if (IsReady || (timeShift != null && !timeShift.IsReady))
+        if ((IsReady && states.Count > 0) || (timeShift != null && !timeShift.IsReady))
             return;
 
+        bool restoreAngles = IsReady;
         TimeFlagWolrdRoot pastWorld = null;
         if (timeShift != null)
             pastWorld = timeShift.GetWorld(TimeFlag.Past);
@@ -83,8 +84,14 @@ public sealed class MirrorPuzzleController : MonoBehaviour
 
             if (!states.TryGetValue(mirror.MirrorId, out MirrorState state))
             {
-                float angle = Random.Range(Mathf.Min(initialAngleRange.x, initialAngleRange.y),
-                    Mathf.Max(initialAngleRange.x, initialAngleRange.y));
+                float angle = mirror.Angle;
+                if (!restoreAngles)
+                {
+                    angle = Random.Range(Mathf.Min(initialAngleRange.x, initialAngleRange.y),
+                        Mathf.Max(initialAngleRange.x, initialAngleRange.y));
+                    if (StageProgress.Angles.TryGetValue(gameObject.scene.path + "/" + mirror.MirrorId, out float savedAngle))
+                        angle = savedAngle;
+                }
                 state = new MirrorState
                 {
                     InitialAngle = angle,
@@ -119,6 +126,7 @@ public sealed class MirrorPuzzleController : MonoBehaviour
             return;
 
         state.Angle = Mathf.Repeat(state.Angle + deltaAngle, 360f);
+        StageProgress.Angles[gameObject.scene.path + "/" + mirror.MirrorId] = state.Angle;
         ApplyState(state);
     }
 

@@ -88,7 +88,7 @@ SpriteRenderer:
   m_SortingLayer: 2
   m_SortingOrder: 10
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 19f56e1b0ffed3a43b0f9a7933b4b05b, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 546a921e938df114eb9bebad1233d9bf, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -136,7 +136,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.43, y: 2.2428572}
+    oldSize: {x: 2.57, y: 2.57}
     newSize: {x: 10.01, y: 15.7}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -193,9 +193,11 @@ MonoBehaviour:
   MovementArea: {fileID: 0}
   BoundaryMargin: 1
   AttackDamage: 50
-  AttackDuration: 1
+  AttackDuration: 0.45
   RecoverDuration: 1
   HitDuration: 1
+  HitKnockbackSpeed: 3
+  HitKnockbackDeceleration: 24
   ReturnAttackDelay: 1
   DeathDuration: 0.8
   FlightGravity: 39.24

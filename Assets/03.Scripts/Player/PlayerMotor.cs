@@ -1,9 +1,10 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-28
+/// 스크립트 최종 수정일: 2026-11-02
 /// 기능: 플레이어의 수평 이동, 점프, 중력, 접지와 모서리 보정을 처리한다.
 /// </summary>
 
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public sealed class PlayerMotor : MonoBehaviour
@@ -53,6 +54,7 @@ public sealed class PlayerMotor : MonoBehaviour
     private Rigidbody2D body;                                                   // 물리 이동을 적용할 리지드바디
     private Collider2D bodyCollider;                                            // 접지와 충돌 검사에 사용할 콜라이더
     private PlayerInputReader inputReader;                                      // 플레이어 입력을 제공하는 컴포넌트
+    private PlayerInteractor interactor;
     private CameraFollow2D cameraFollow;                                        // 이동 경계를 제공하는 카메라
     private readonly RaycastHit2D[] groundHits = new RaycastHit2D[4];           // 접지 검사 결과 버퍼
     private readonly RaycastHit2D[] ceilingHits = new RaycastHit2D[4];          // 천장 검사 결과 버퍼
@@ -69,14 +71,27 @@ public sealed class PlayerMotor : MonoBehaviour
     private float verticalVelocity;                                             // 직접 계산하는 수직 속도
     private bool hasJumpedThisPhysicsTick;                                      // 현재 물리 틱에서 점프했는지 여부
 
+    private readonly Dictionary<UltravioletLight, float> ultravioletSlows = new();
+
+    public void SetUltravioletSlow(UltravioletLight source, float multiplier)
+    {
+        ultravioletSlows[source] = Mathf.Clamp01(multiplier);
+    }
+
+    public void RemoveUltravioletSlow(UltravioletLight source)
+    {
+        ultravioletSlows.Remove(source);
+    }
+
     /// <summary>
-    /// 컴포넌트와 접지 필터, 시각 요소의 기본 상태를 초기화.
+    /// 컴포넌트와 접지 필터, 시각 요소의 기본 상태를 초기화한다.
     /// </summary>
     private void Awake()
     {
         body = GetComponent<Rigidbody2D>();
         bodyCollider = GetComponent<Collider2D>();
         inputReader = GetComponent<PlayerInputReader>();
+        interactor = GetComponent<PlayerInteractor>();
         if (Camera.main != null)
             cameraFollow = Camera.main.GetComponent<CameraFollow2D>();
 
@@ -141,8 +156,15 @@ public sealed class PlayerMotor : MonoBehaviour
         Vector2 velocity = body.linearVelocity;
         velocity.y = verticalVelocity;
 
-        ApplyFacing(horizontalInput);
-        ApplyHorizontalMovement(ref velocity, horizontalInput, deltaTime);
+        if (interactor != null && interactor.IsControllingCarrier)
+        {
+            velocity.x = 0f;
+        }
+        else
+        {
+            ApplyFacing(horizontalInput);
+            ApplyHorizontalMovement(ref velocity, horizontalInput, deltaTime);
+        }
         TryJump(ref velocity);
 
         StopRisingAtCeiling(ref velocity);
@@ -308,6 +330,13 @@ public sealed class PlayerMotor : MonoBehaviour
         horizontalInput = Mathf.Clamp(horizontalInput, -1f, 1f);
 
         float targetSpeed = horizontalInput * maximumSpeed;
+        float speedMultiplier = 1f;
+        foreach (var slow in ultravioletSlows)
+        {
+            if (slow.Key != null && slow.Key.isActiveAndEnabled)
+                speedMultiplier = Mathf.Min(speedMultiplier, slow.Value);
+        }
+        targetSpeed *= speedMultiplier;
 
         float acceleration = GetHorizontalAcceleration(
             velocity.x,

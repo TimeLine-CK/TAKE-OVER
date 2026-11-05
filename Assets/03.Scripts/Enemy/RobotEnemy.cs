@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-27
+/// 스크립트 최종 수정일: 2026-11-05
 /// 기능: 근접 경비의 발견, 추적, 공격, 피격과 운반대 충돌 후 비행을 처리한다.
 /// </summary>
 
@@ -45,6 +45,8 @@ public class RobotEnemy : MonoBehaviour
     [FormerlySerializedAs("AttackInterval"), FormerlySerializedAs("attackInterval"), Min(0f)]
     public float RecoverDuration = 1f;
     [Min(0f)] public float HitDuration = 1f;
+    [Min(0f)] public float HitKnockbackSpeed = 3f;          // 검에 맞았을 때 밀려나는 속도
+    [Min(0f)] public float HitKnockbackDeceleration = 24f;  // 넉백 감속량
     [Min(0f)] public float ReturnAttackDelay = 1f;
     [FormerlySerializedAs("deathDuration"), Min(0f)] public float DeathDuration = 0.8f;
 
@@ -69,6 +71,7 @@ public class RobotEnemy : MonoBehaviour
     private float attackDelay;
     private float attackDirection;
     private bool hasHit;
+    private float hitKnockbackVelocity;
     private bool wasEnabled;
     private Vector2 savedVelocity;
     private Vector2 launchVelocity;
@@ -147,7 +150,8 @@ public class RobotEnemy : MonoBehaviour
         bool ready = awareness.Observe(detected, !waiting);
         if (waiting)
         {
-            StopMoving();
+            if (state != RobotState.Hit)
+                StopMoving();
             remaining -= Time.deltaTime;
             if (remaining <= 0f)
             {
@@ -206,6 +210,12 @@ public class RobotEnemy : MonoBehaviour
     {
         if (HitStopController.IsActive)
             return;
+        if (state == RobotState.Hit)
+        {
+            body.linearVelocity = new Vector2(hitKnockbackVelocity, body.linearVelocity.y);
+            hitKnockbackVelocity = Mathf.MoveTowards(hitKnockbackVelocity, 0f,
+                Mathf.Max(0f, HitKnockbackDeceleration) * Time.fixedDeltaTime);
+        }
         if (state == RobotState.Die || state == RobotState.Flying || body.linearVelocity.x == 0f)
             return;
         float minimum = startPosition.x - DetectionRange;
@@ -258,6 +268,17 @@ public class RobotEnemy : MonoBehaviour
         {
             StopMoving();
             EnterState(RobotState.Hit);
+            if (source == DamageSource.Player && player != null)
+            {
+                float direction = body.position.x - player.position.x;
+                if (Mathf.Abs(direction) < 0.01f)
+                {
+                    direction = 1f;
+                    if (spriteRenderer != null && spriteRenderer.flipX)
+                        direction = -1f;
+                }
+                hitKnockbackVelocity = Mathf.Sign(direction) * Mathf.Max(0f, HitKnockbackSpeed);
+            }
         }
     }
 
@@ -334,6 +355,7 @@ public class RobotEnemy : MonoBehaviour
 
     private void StopMoving()
     {
+        hitKnockbackVelocity = 0f;
         body.linearVelocity = new Vector2(0f, body.linearVelocity.y);
     }
 
@@ -342,6 +364,8 @@ public class RobotEnemy : MonoBehaviour
         if (state == next && next != RobotState.Hit)
             return;
         state = next;
+        if (next != RobotState.Hit)
+            hitKnockbackVelocity = 0f;
         int animation = idleStateHash;
         if (next == RobotState.Move)
             animation = runStateHash;
@@ -357,7 +381,10 @@ public class RobotEnemy : MonoBehaviour
             animation = hitStateHash;
         }
         else if (next == RobotState.Recover)
+        {
             remaining = Mathf.Max(0f, RecoverDuration);
+            StopMoving();
+        }
         else if (next == RobotState.Die)
         {
             remaining = GetDeathDuration();

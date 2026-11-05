@@ -253,7 +253,7 @@ SpriteRenderer:
   m_Size: {x: 8.025, y: 1.55}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!4 &127290644
 Transform:
@@ -303,6 +303,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Checkpoint
   systemDirector: {fileID: 2085195824}
   safePosition: {fileID: 1948662663}
+  spriteRenderer: {fileID: 130752854}
+  inactiveSprite: {fileID: 21300000, guid: 9db9703d390682949936e8de4aab14f8, type: 3}
+  activeSprite: {fileID: 21300000, guid: 5eb18f3dd847322439093905b7ee942e, type: 3}
 --- !u!61 &130752853
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -1693,7 +1696,7 @@ SpriteRenderer:
   m_Size: {x: 8.025, y: 1.55}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!4 &1056360313
 Transform:
@@ -2092,6 +2095,9 @@ MonoBehaviour:
   followSharpness: 6
   lookAheadDistance: 2
   lookAheadSharpness: 4
+  peekDistance: 7.5
+  peekEdgeWidth: 0.18
+  peekSharpness: 6
 --- !u!114 &1331458089
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3239,7 +3245,7 @@ SpriteRenderer:
   m_Size: {x: 8.025, y: 1.55}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!4 &1747636667
 Transform:

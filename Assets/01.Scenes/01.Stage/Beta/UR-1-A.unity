@@ -1561,7 +1561,7 @@ SpriteRenderer:
   m_Size: {x: 8.025, y: 1.55}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!4 &598113216
 Transform:
@@ -2399,6 +2399,9 @@ MonoBehaviour:
   followSharpness: 6
   lookAheadDistance: 2
   lookAheadSharpness: 4
+  peekDistance: 7.5
+  peekEdgeWidth: 0.18
+  peekSharpness: 6
 --- !u!1 &1193509832
 GameObject:
   m_ObjectHideFlags: 0
@@ -2533,7 +2536,7 @@ SpriteRenderer:
   m_Size: {x: 8.025, y: 1.55}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!4 &1193509836
 Transform:
@@ -2685,7 +2688,7 @@ SpriteRenderer:
   m_Size: {x: 8.025, y: 1.55}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!4 &1373751520
 Transform:
@@ -3674,7 +3677,7 @@ SpriteRenderer:
   m_Size: {x: 8.025, y: 1.55}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!4 &1979577975
 Transform:
@@ -3782,6 +3785,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Checkpoint
   systemDirector: {fileID: 8633575458089270503}
   safePosition: {fileID: 1244520990}
+  spriteRenderer: {fileID: 2032527337}
+  inactiveSprite: {fileID: 21300000, guid: 9db9703d390682949936e8de4aab14f8, type: 3}
+  activeSprite: {fileID: 21300000, guid: 5eb18f3dd847322439093905b7ee942e, type: 3}
 --- !u!61 &2032527336
 BoxCollider2D:
   m_ObjectHideFlags: 0

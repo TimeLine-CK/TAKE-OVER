@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-28
+/// 스크립트 최종 수정일: 2026-11-02
 /// 기능: 플레이어의 이동과 점프 상태를 Animator 파라미터와 공격 트리거에 반영한다.
 /// </summary>
 
@@ -9,6 +9,7 @@ public class PlayerAnimator : MonoBehaviour
 {
     [SerializeField] private PlayerMotor motor;             // 이동 및 접지 상태를 제공하는 컴포넌트
     [SerializeField] private PlayerInputReader inputReader; // 이동 입력을 제공하는 컴포넌트
+    private PlayerInteractor interactor;
     private Animator animator;                              // 캐릭터 애니메이션을 제어하는 Animator
 
     private readonly int isGroundedHash = Animator.StringToHash("IsGrounded");              // 접지 파라미터 해시
@@ -27,6 +28,8 @@ public class PlayerAnimator : MonoBehaviour
 
         if (inputReader == null)
             inputReader = GetComponentInParent<PlayerInputReader>();
+
+        interactor = motor.GetComponent<PlayerInteractor>();
     }
 
     /// <summary>
@@ -37,7 +40,12 @@ public class PlayerAnimator : MonoBehaviour
         float currentSpeed = Mathf.Abs(motor.Velocity.x);
         float inputX = Mathf.Abs(inputReader.Move.x);
 
-        if (inputX > 0.1f || currentSpeed > 0.1f)
+        bool isControllingCarrier = interactor != null && interactor.IsControllingCarrier;
+        if (isControllingCarrier)
+        {
+            idleTimer = 0f;
+        }
+        else if (inputX > 0.1f || currentSpeed > 0.1f)
         {
             idleTimer = IdleGraceTime;
         }
@@ -52,7 +60,7 @@ public class PlayerAnimator : MonoBehaviour
         }
 
         animator.SetFloat(speedHash, idleTimer > 0f ? 1f : 0f);
-        animator.SetBool(isGroundedHash, motor.IsGrounded);
+        animator.SetBool(isGroundedHash, isControllingCarrier || motor.IsGrounded);
         animator.SetFloat(verticalVelocityHash, motor.Velocity.y);
     }
 

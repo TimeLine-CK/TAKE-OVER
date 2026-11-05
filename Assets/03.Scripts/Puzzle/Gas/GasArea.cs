@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-16
+/// 스크립트 최종 수정일: 2026-11-05
 /// 기능: 누출 영역의 가스 농도와 예고 시간 및 반복 환경 피해를 처리한다.
 /// </summary>
 
@@ -18,7 +18,8 @@ public sealed class GasArea : MonoBehaviour
 
     public bool IsLeaking => isLeaking;
     public string ValveId => valveId;
-    private BoxCollider2D area;
+    [SerializeField] private Collider2D damageArea;
+    private Collider2D area;
     private float nextDamageTime;
     private float density;
     private bool hasBeenVisible;
@@ -28,16 +29,28 @@ public sealed class GasArea : MonoBehaviour
 
     private void Awake()
     {
-        area = GetComponent<BoxCollider2D>();
+        area = damageArea;
+        if (area == null)
+            area = GetComponent<BoxCollider2D>();
         properties = new MaterialPropertyBlock();
     }
 
     private void OnEnable()
     {
         if (area == null)
-            area = GetComponent<BoxCollider2D>();
+        {
+            area = damageArea;
+            if (area == null)
+                area = GetComponent<BoxCollider2D>();
+        }
         if (properties == null)
             properties = new MaterialPropertyBlock();
+    }
+
+    public void SetDamageArea(Collider2D value)
+    {
+        damageArea = value;
+        area = value;
     }
 
     /// <summary>

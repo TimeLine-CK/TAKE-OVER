@@ -6,11 +6,41 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/01.Scenes/01.Stage/Alpha/S_Pr_1.unity
+    guid: c82ffad6d9d1a634e96c75e08633297b
+  - enabled: 1
+    path: Assets/01.Scenes/01.Stage/Alpha/S_Pa_1.unity
+    guid: 3e77908b80a6e62459dc309191ee405a
+  - enabled: 1
+    path: Assets/01.Scenes/01.Stage/Alpha/G_Pr_1.unity
+    guid: 6a1674e3622fee74cb148f8dafd6fed3
+  - enabled: 1
+    path: Assets/01.Scenes/01.Stage/Alpha/G_Pa_1.unity
+    guid: 28f263f6062c7324c887eed12cccb601
+  - enabled: 1
     path: Assets/01.Scenes/01.Stage/Alpha/G_Pr_2.unity
     guid: e931854b0b5e29547bfc2d0bbd7cc632
   - enabled: 1
     path: Assets/01.Scenes/01.Stage/Alpha/G_Pa_2.unity
     guid: 48b59df739a808848b4b652f2f019ef8
+  - enabled: 1
+    path: Assets/01.Scenes/01.Stage/Alpha/G_Pr_3.unity
+    guid: 32c46d5232c7bc74397003998b9d0536
+  - enabled: 1
+    path: Assets/01.Scenes/01.Stage/Alpha/G_Pa_3.unity
+    guid: a749e80f3fd25a64a84c964bdcb711cc
+  - enabled: 0
+    path: Assets/01.Scenes/01.Stage/Tests/Sewer_Present_Test.unity
+    guid: 22e5753b8f7e63f4e8c1767853e00f49
+  - enabled: 1
+    path: Assets/01.Scenes/01.Stage/Tests/Sewer_Past_Test.unity
+    guid: 0a8734fea1cf80940a9a0ebf540eb95d
+  - enabled: 1
+    path: Assets/01.Scenes/01.Stage/Alpha/D_Pr_1.unity
+    guid: 02da9468a55e803409c29165dcbb3f3c
+  - enabled: 1
+    path: Assets/01.Scenes/01.Stage/Alpha/D_Pa_1.unity
+    guid: e08de018e2bcbd3468ca59f555cf132c
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 179c506ed05dc7d40bada3d394f6b379, type: 3}

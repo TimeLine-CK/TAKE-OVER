@@ -1,6 +1,6 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-27
-/// 기능: 체크포인트 상태 저장과 사망 화면 및 재시작 복원을 관리한다.
+/// 스크립트 최종 수정일: 2026-11-05
+/// 기능: 체크포인트 위치와 사망 화면을 관리하고 월드 상태를 유지한 채 플레이어를 부활시킨다.
 /// </summary>
 
 using UnityEngine;
@@ -25,8 +25,6 @@ public class SystemDirector : MonoBehaviour
     private bool isStopped;
     private float previousTimeScale = 1f;
     private float messageUntil;
-    private TimeShiftController timeShift;
-    private CheckpointState savedState;
 
     /// <summary>
     /// 플레이어가 마지막으로 들어간 체크포인트를 저장한다.
@@ -36,10 +34,10 @@ public class SystemDirector : MonoBehaviour
         if (checkpoint == null || isStopped || isRespawning)
             return;
 
+        if (currentCheckpoint != null)
+            currentCheckpoint.SetActivated(false);
         currentCheckpoint = checkpoint;
-        if (timeShift != null && !timeShift.IsReady)
-            return;
-        SaveState();
+        currentCheckpoint.SetActivated(true);
         ShowMessage("CHECKPOINT SAVED");
     }
 
@@ -55,24 +53,7 @@ public class SystemDirector : MonoBehaviour
             startPosition = playerObj.transform.position;
             playerBody = playerObj.GetComponent<Rigidbody2D>();
             playerMotor = playerObj.GetComponent<PlayerMotor>();
-            timeShift = playerObj.GetComponent<TimeShiftController>();
         }
-    }
-
-    private void SaveInitialState()
-    {
-        if (savedState == null)
-            SaveState();
-    }
-
-    private void SaveState()
-    {
-        if (playerHealth == null)
-            return;
-        Vector3 position = startPosition;
-        if (currentCheckpoint != null)
-            position = currentCheckpoint.Position;
-        savedState = new CheckpointState(timeShift, playerHealth, position);
     }
 
     /// <summary>
@@ -82,14 +63,6 @@ public class SystemDirector : MonoBehaviour
     {
         if (playerHealth != null)
             playerHealth.Died += HelthCheck;
-        if (timeShift != null)
-        {
-            timeShift.WorldsReady += SaveInitialState;
-            if (timeShift.IsReady)
-                SaveInitialState();
-        }
-        else
-            SaveInitialState();
     }
 
     /// <summary>
@@ -135,7 +108,7 @@ public class SystemDirector : MonoBehaviour
     }
 
     /// <summary>
-    /// 재시작 버튼을 누르면 저장된 스테이지와 시대를 복원한다.
+    /// 월드 진행을 되돌리지 않고 플레이어를 부활시킨다.
     /// </summary>
     public void Restart()
     {
@@ -145,11 +118,6 @@ public class SystemDirector : MonoBehaviour
         if (deathPanel != null)
             deathPanel.SetActive(false);
         Time.timeScale = previousTimeScale;
-        savedState?.Restore();
-        if (timeShift != null && savedState != null)
-            timeShift.RestoreWorld(savedState.Era);
-        foreach (MirrorPuzzleController puzzle in FindObjectsByType<MirrorPuzzleController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-            puzzle.ResetMirrors();
         Respawn();
         isStopped = false;
         isRespawning = false;
@@ -161,9 +129,7 @@ public class SystemDirector : MonoBehaviour
     private void Respawn()
     {
         Vector3 respawnPosition = startPosition;
-        if (savedState != null)
-            respawnPosition = savedState.SpawnPosition;
-        else if (currentCheckpoint != null)
+        if (currentCheckpoint != null)
         {
             Vector2 checkpointPosition = currentCheckpoint.Position;
             respawnPosition.x = checkpointPosition.x;
@@ -210,8 +176,6 @@ public class SystemDirector : MonoBehaviour
     {
         if (playerHealth != null)
             playerHealth.Died -= HelthCheck;
-        if (timeShift != null)
-            timeShift.WorldsReady -= SaveInitialState;
         if (isStopped)
             Time.timeScale = previousTimeScale;
     }

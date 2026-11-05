@@ -1,6 +1,6 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-16
-/// 기능: 플레이어가 있는 시대의 적 생사를 검사하고 다음 튜토리얼로 이동한다.
+/// 스크립트 최종 수정일: 2026-11-05
+/// 기능: 시대별 또는 전체 적 전멸 조건을 확인하고 다음 씬으로 이동한다.
 /// </summary>
 
 using System.Collections;
@@ -12,7 +12,8 @@ using UnityEngine.SceneManagement;
 public sealed class StageExit : MonoBehaviour
 {
     [SerializeField] private string nextSceneName; // 다음 현재 씬, 비어 있으면 튜토리얼 완료
-    [SerializeField] private bool requiresClear;   // 현재 시대의 적 전멸 조건
+    [SerializeField] private bool requiresClear;   // 적 전멸 조건
+    [SerializeField] private bool requiresAllEras; // 양쪽 시대의 적을 모두 검사
     [SerializeField] private SpriteRenderer indicator; // 출구 열림 상태 표시
     private TimeShiftController timeShift;
     private SystemDirector director;
@@ -47,7 +48,7 @@ public sealed class StageExit : MonoBehaviour
     }
 
     /// <summary>
-    /// 반대 시대의 적은 제외하고 현재 시대의 생존 적만 검사한다.
+    /// 설정된 시대 범위와 공용 영역에 생존한 적이 있는지 확인한다.
     /// </summary>
     public bool CanExit()
     {
@@ -55,18 +56,32 @@ public sealed class StageExit : MonoBehaviour
             return false;
         if (!requiresClear)
             return true;
-        Health[] enemies = presentEnemies;
-        if (timeShift != null && timeShift.CurrentFlag == TimeFlag.Past)
-            enemies = pastEnemies;
+        if (requiresAllEras)
+        {
+            if (HasLivingEnemy(presentEnemies) || HasLivingEnemy(pastEnemies))
+                return false;
+        }
+        else
+        {
+            Health[] enemies = presentEnemies;
+            if (timeShift != null && timeShift.CurrentFlag == TimeFlag.Past)
+                enemies = pastEnemies;
+            if (HasLivingEnemy(enemies))
+                return false;
+        }
+        return !HasLivingEnemy(sharedEnemies);
+    }
+
+    private static bool HasLivingEnemy(Health[] enemies)
+    {
         if (enemies == null)
-            return false;
+            return true;
         foreach (Health enemy in enemies)
+        {
             if (enemy != null && !enemy.IsDead)
-                return false;
-        foreach (Health enemy in sharedEnemies)
-            if (enemy != null && !enemy.IsDead)
-                return false;
-        return true;
+                return true;
+        }
+        return false;
     }
 
     private void Update()
@@ -84,13 +99,22 @@ public sealed class StageExit : MonoBehaviour
     /// </summary>
     private void OnTriggerStay2D(Collider2D other)
     {
-        if (!other.CompareTag("Player") || isLeaving || !isReady)
+        GameObject player = other.gameObject;
+        if (other.attachedRigidbody != null)
+            player = other.attachedRigidbody.gameObject;
+        if (!player.CompareTag("Player") || isLeaving || !isReady)
+            return;
+        Health health = player.GetComponent<Health>();
+        if (health == null || health.IsDead)
             return;
         if (!CanExit())
         {
             if (Time.unscaledTime >= nextHintTime)
             {
-                director?.ShowMessage("Defeat the enemies in this era");
+                if (requiresAllEras)
+                    director?.ShowMessage("모든 적을 처치해야 이동할 수 있습니다.");
+                else
+                    director?.ShowMessage("Defeat the enemies in this era");
                 nextHintTime = Time.unscaledTime + 2f;
             }
             return;
@@ -107,7 +131,11 @@ public sealed class StageExit : MonoBehaviour
             return;
         }
         isLeaving = true;
-        other.gameObject.SetActive(false);
+        if (requiresClear)
+            StageProgress.Switches["StageClear/" + gameObject.scene.name] = true;
+        HitStopController.Cancel();
+        Time.timeScale = 1f;
+        player.SetActive(false);
         SceneManager.LoadSceneAsync(nextSceneName, LoadSceneMode.Single);
     }
 }

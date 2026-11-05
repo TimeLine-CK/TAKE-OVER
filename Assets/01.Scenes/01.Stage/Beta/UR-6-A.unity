@@ -2269,6 +2269,9 @@ MonoBehaviour:
   followSharpness: 6
   lookAheadDistance: 2
   lookAheadSharpness: 4
+  peekDistance: 7.5
+  peekEdgeWidth: 0.18
+  peekSharpness: 6
 --- !u!1 &1124234986
 GameObject:
   m_ObjectHideFlags: 0
@@ -2302,6 +2305,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Checkpoint
   systemDirector: {fileID: 8633575458089270503}
   safePosition: {fileID: 373703054}
+  spriteRenderer: {fileID: 1124234989}
+  inactiveSprite: {fileID: 21300000, guid: 9db9703d390682949936e8de4aab14f8, type: 3}
+  activeSprite: {fileID: 21300000, guid: 5eb18f3dd847322439093905b7ee942e, type: 3}
 --- !u!61 &1124234988
 BoxCollider2D:
   m_ObjectHideFlags: 0

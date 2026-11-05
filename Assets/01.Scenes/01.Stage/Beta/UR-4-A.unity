@@ -253,7 +253,7 @@ SpriteRenderer:
   m_Size: {x: 8.025, y: 1.55}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!4 &6619051
 Transform:
@@ -404,7 +404,7 @@ SpriteRenderer:
   m_Size: {x: 8.025, y: 1.55}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!4 &109192970
 Transform:
@@ -1046,6 +1046,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Checkpoint
   systemDirector: {fileID: 987011001}
   safePosition: {fileID: 2054091545}
+  spriteRenderer: {fileID: 956721683}
+  inactiveSprite: {fileID: 21300000, guid: 9db9703d390682949936e8de4aab14f8, type: 3}
+  activeSprite: {fileID: 21300000, guid: 5eb18f3dd847322439093905b7ee942e, type: 3}
 --- !u!61 &956721682
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -1460,6 +1463,9 @@ MonoBehaviour:
   followSharpness: 6
   lookAheadDistance: 2
   lookAheadSharpness: 4
+  peekDistance: 7.5
+  peekEdgeWidth: 0.18
+  peekSharpness: 6
 --- !u!4 &1047419939 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1211061532258115228, guid: a9970e4881009254984b0e4ead82ee4e, type: 3}
@@ -1830,7 +1836,7 @@ SpriteRenderer:
   m_Size: {x: 8.025, y: 1.55}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!4 &1499113498
 Transform:
@@ -2247,7 +2253,7 @@ SpriteRenderer:
   m_Size: {x: 8.025, y: 1.55}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!4 &1598955743
 Transform:
@@ -3517,7 +3523,7 @@ SpriteRenderer:
   m_Size: {x: 8.025, y: 1.55}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!4 &2000426710
 Transform:

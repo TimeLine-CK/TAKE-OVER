@@ -396,6 +396,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Checkpoint
   systemDirector: {fileID: 829230618}
   safePosition: {fileID: 0}
+  spriteRenderer: {fileID: 0}
+  inactiveSprite: {fileID: 0}
+  activeSprite: {fileID: 0}
 --- !u!1 &186123747
 GameObject:
   m_ObjectHideFlags: 0
@@ -1018,6 +1021,9 @@ MonoBehaviour:
   followSharpness: 6
   lookAheadDistance: 2
   lookAheadSharpness: 4
+  peekDistance: 7.5
+  peekEdgeWidth: 0.18
+  peekSharpness: 6
 --- !u!114 &583839630
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1561,9 +1567,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e93dd889bf36ad249ba2df5bb94e6f4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TimeShiftVfxPlayer
-  shiftVfx: {fileID: 32900000, guid: 6c2359ee01beeec4697f3393f799575b, type: 3}
-  revealMask: {fileID: 2800000, guid: 77b20471cbcc7cd43bac7808e7f7445e, type: 3}
-  effectColor: {r: 0.1, g: 1.4, b: 2.5, a: 1}
+  shiftVfx: {fileID: 32900000, guid: 95ee8629359c14842bf150666206a185, type: 3}
 --- !u!1 &829230616
 GameObject:
   m_ObjectHideFlags: 0

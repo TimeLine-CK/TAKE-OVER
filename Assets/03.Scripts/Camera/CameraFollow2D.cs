@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-29
+/// 스크립트 최종 수정일: 2026-11-02
 /// 기능: 플레이어를 추적하고 Ctrl과 화면 가장자리의 마우스 위치로 주변을 둘러본다.
 /// </summary>
 
@@ -15,7 +15,7 @@ public sealed class CameraFollow2D : MonoBehaviour
     [SerializeField] private float followSharpness = 6f;                // 추적 반응 속도
     [SerializeField] private float lookAheadDistance = 2f;              // 이동 방향을 미리 보여주는 거리
     [SerializeField] private float lookAheadSharpness = 4f;             // 시점 전환 반응 속도
-    [SerializeField, Min(0f)] private float peekDistance = 7.5f;         // 둘러볼 때 플레이어에서 떨어질 최대 수평 거리
+    [SerializeField, Min(0f)] private float peekDistance = 7.5f;         // 둘러보기 이동 속도
     [SerializeField, Range(0.05f, 0.45f)] private float peekEdgeWidth = 0.18f; // 둘러보기가 시작되는 화면 가장자리 비율
     [SerializeField, Min(0f)] private float peekSharpness = 6f;          // 둘러보기와 복귀 반응 속도
 
@@ -24,10 +24,9 @@ public sealed class CameraFollow2D : MonoBehaviour
     private float lookDirection;            // 현재 바라볼 수평 방향
     private float currentLookAhead;         // 현재 적용된 시선 선행 거리
     private PlayerInputReader inputReader;
-    private Collider2D targetCollider;
-    private SpriteRenderer targetRenderer;
     private Vector3 followPosition;
     private Vector2 currentPeekOffset;
+    private bool isPeeking;
 
     /// <summary>
     /// 추적 대상을 찾고 이동 정보에 필요한 참조를 초기화한다.
@@ -48,8 +47,6 @@ public sealed class CameraFollow2D : MonoBehaviour
         {
             targetBody = target.GetComponent<Rigidbody2D>();
             inputReader = target.GetComponent<PlayerInputReader>();
-            targetCollider = target.GetComponent<Collider2D>();
-            targetRenderer = target.GetComponentInChildren<SpriteRenderer>();
         }
 
         followPosition = transform.position;
@@ -93,52 +90,69 @@ public sealed class CameraFollow2D : MonoBehaviour
 
         float blend = 1f - Mathf.Exp(-followSharpness * Time.unscaledDeltaTime);
         followPosition = ClampToBounds(Vector3.Lerp(current, desired, blend));
-        Vector2 peekOffset = GetPeekOffset();
-        float peekBlend = 1f - Mathf.Exp(-peekSharpness * Time.unscaledDeltaTime);
-        currentPeekOffset = Vector2.Lerp(currentPeekOffset, peekOffset, peekBlend);
-        if ((currentPeekOffset - peekOffset).sqrMagnitude < 0.000001f)
-            currentPeekOffset = peekOffset;
-        transform.position = ClampToBounds(followPosition + (Vector3)currentPeekOffset);
+        if (TryGetPeekDirection(out Vector2 direction))
+        {
+            currentPeekOffset += direction * Mathf.Max(0f, peekDistance) * Time.unscaledDeltaTime;
+        }
+        else
+        {
+            float peekBlend = 1f - Mathf.Exp(-peekSharpness * Time.unscaledDeltaTime);
+            currentPeekOffset = Vector2.Lerp(currentPeekOffset, Vector2.zero, peekBlend);
+            if (currentPeekOffset.sqrMagnitude < 0.000001f)
+                currentPeekOffset = Vector2.zero;
+        }
+        Vector3 position = ClampToBounds(followPosition + (Vector3)currentPeekOffset);
+        currentPeekOffset = position - followPosition;
+        transform.position = position;
     }
 
     /// <summary>
-    /// Ctrl을 누르고 화면 가장자리로 마우스를 옮기면 해당 방향의 둘러보기 거리를 계산한다.
+    /// 가장자리에서 둘러보기를 시작하고 마우스 방향을 따라 시점을 이어서 이동한다.
     /// </summary>
-    private Vector2 GetPeekOffset()
+    private bool TryGetPeekDirection(out Vector2 direction)
     {
+        direction = Vector2.zero;
         if (inputReader == null || !inputReader.isActiveAndEnabled || !inputReader.IsCameraPeekHeld
             || currentCamera == null || !currentCamera.orthographic)
-            return Vector2.zero;
-
+        {
+            isPeeking = false;
+            return false;
+        }
         Rect viewport = currentCamera.pixelRect;
         Vector2 pointer = inputReader.PointerPosition;
         if (viewport.width <= 0f || viewport.height <= 0f
             || pointer.x < viewport.xMin || pointer.x > viewport.xMax
             || pointer.y < viewport.yMin || pointer.y > viewport.yMax)
+        {
+            isPeeking = false;
+            return false;
+        }
+
+        Vector2 viewportPosition = new Vector2(
+            (pointer.x - viewport.xMin) / viewport.width,
+            (pointer.y - viewport.yMin) / viewport.height
+        );
+        direction = GetPeekDirection(viewportPosition);
+        return isPeeking;
+    }
+
+    private Vector2 GetPeekDirection(Vector2 viewportPosition)
+    {
+        Vector2 direction = (viewportPosition - Vector2.one * 0.5f) * 2f;
+        float distance = direction.magnitude;
+        if (distance <= 0.12f)
+        {
+            isPeeking = false;
             return Vector2.zero;
-
-        Vector2 strength = new Vector2(
-            GetEdgeStrength((pointer.x - viewport.xMin) / viewport.width),
-            GetEdgeStrength((pointer.y - viewport.yMin) / viewport.height)
-        );
-        Bounds bounds = new Bounds(target.position, Vector3.zero);
-        if (targetCollider != null && targetCollider.enabled)
-            bounds.Encapsulate(targetCollider.bounds);
-        if (targetRenderer != null && targetRenderer.enabled && targetRenderer.gameObject.activeInHierarchy)
-            bounds.Encapsulate(targetRenderer.bounds);
-
-        Vector2 radius = (Vector2)bounds.extents + new Vector2(
-            Mathf.Abs(bounds.center.x - target.position.x),
-            Mathf.Abs(bounds.center.y - target.position.y)
-        );
-        float halfHeight = currentCamera.orthographicSize;
-        float horizontalDistance = Mathf.Min(peekDistance, Mathf.Max(0f, halfHeight * currentCamera.aspect - radius.x - 0.2f));
-        float verticalDistance = Mathf.Min(peekDistance / currentCamera.aspect, Mathf.Max(0f, halfHeight - radius.y - 0.2f));
-        Vector2 normalOffset = (Vector2)(followPosition - target.position);
-        return new Vector2(
-            (Mathf.Sign(strength.x) * horizontalDistance - normalOffset.x) * Mathf.Abs(strength.x),
-            (Mathf.Sign(strength.y) * verticalDistance - normalOffset.y) * Mathf.Abs(strength.y)
-        );
+        }
+        if (!isPeeking)
+        {
+            if (Mathf.Approximately(GetEdgeStrength(viewportPosition.x), 0f)
+                && Mathf.Approximately(GetEdgeStrength(viewportPosition.y), 0f))
+                return Vector2.zero;
+            isPeeking = true;
+        }
+        return direction.normalized * Mathf.InverseLerp(0.12f, 1f, distance);
     }
 
     private float GetEdgeStrength(float position)

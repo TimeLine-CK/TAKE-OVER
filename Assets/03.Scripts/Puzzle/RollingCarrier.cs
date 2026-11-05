@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-29
+/// 스크립트 최종 수정일: 2026-11-03
 /// 기능: 몸으로 밀거나 공격한 운반대를 이동하고 낙하와 탑승자 이동을 처리한다.
 /// </summary>
 
@@ -10,7 +10,7 @@ using System.Collections.Generic;
 [DefaultExecutionOrder(100)]
 public sealed class RollingCarrier : MonoBehaviour
 {
-    [SerializeField] private float hitSpeed = 4f;       // 검에 맞았을 때의 이동 속도
+    [SerializeField] private float hitSpeed = 2.5f;       // 검에 맞았을 때의 이동 속도
     [SerializeField] private float deceleration = 0.8f; // 초당 감속량
     [SerializeField, Min(0f)] private float pushSpeed = 1.5f; // 몸으로 밀 때의 이동 속도
     [SerializeField] private LayerMask obstacleMask;   // 운반대를 멈추는 지형과 전용 턱
@@ -23,6 +23,7 @@ public sealed class RollingCarrier : MonoBehaviour
     private PlayerInputReader playerInput;
     private Collider2D playerCollider;
     private Health playerHealth;
+    private PlayerInteractor controller;
     private float speed;
     private float verticalSpeed;
     private readonly RaycastHit2D[] hits = new RaycastHit2D[16];
@@ -51,14 +52,59 @@ public sealed class RollingCarrier : MonoBehaviour
     {
         if (Mathf.Abs(direction.x) < 0.01f)
             return;
+        if (controller != null)
+            controller.StopInteraction();
         float nextDirection = Mathf.Sign(direction.x);
         if (Mathf.Abs(speed) < 0.001f || Mathf.Sign(speed) != nextDirection)
             struckRobots.Clear();
         speed = Mathf.Sign(direction.x) * Mathf.Max(0f, hitSpeed);
     }
 
+    public bool CanControl(PlayerInteractor player)
+    {
+        if (!isActiveAndEnabled || player == null || playerInput == null
+            || player.gameObject != playerInput.gameObject || !playerInput.isActiveAndEnabled
+            || playerCollider == null || !playerCollider.enabled
+            || (playerHealth != null && playerHealth.IsDead))
+            return false;
+        Rigidbody2D playerBody = playerCollider.attachedRigidbody;
+        if (playerBody == null || playerBody.linearVelocity.y > 0.5f)
+            return false;
+        Bounds cartBounds = bodyCollider.bounds;
+        Bounds playerBounds = playerCollider.bounds;
+        float gap = playerBounds.min.y - cartBounds.max.y;
+        return gap >= -0.08f && gap <= 0.15f
+            && playerBounds.max.x > cartBounds.min.x + 0.02f
+            && playerBounds.min.x < cartBounds.max.x - 0.02f;
+    }
+
+    public bool BeginControl(PlayerInteractor player)
+    {
+        if (!CanControl(player))
+            return false;
+        controller = player;
+        speed = 0f;
+        return true;
+    }
+
+    public void EndControl(PlayerInteractor player)
+    {
+        if (controller != player)
+            return;
+        controller = null;
+        speed = 0f;
+    }
+
+    private void OnDisable()
+    {
+        if (controller != null)
+            controller.StopInteraction();
+    }
+
     public void RestoreState()
     {
+        if (controller != null)
+            controller.StopInteraction();
         speed = 0f;
         verticalSpeed = 0f;
         struckRobots.Clear();
@@ -71,10 +117,20 @@ public sealed class RollingCarrier : MonoBehaviour
     /// </summary>
     private void FixedUpdate()
     {
+        if (controller != null && !controller.IsControllingCarrier)
+            controller.StopInteraction();
         float impactSpeed = speed;
         float movementSpeed = speed;
-        if (Mathf.Abs(movementSpeed) < 0.001f)
+        if (controller != null)
+        {
+            speed = 0f;
+            impactSpeed = 0f;
+            movementSpeed = Mathf.Clamp(playerInput.Move.x, -1f, 1f) * Mathf.Max(0f, pushSpeed);
+        }
+        else if (Mathf.Abs(movementSpeed) < 0.001f)
+        {
             movementSpeed = GetPushSpeed();
+        }
         float distance = movementSpeed * Time.fixedDeltaTime;
         ContactFilter2D filter = new ContactFilter2D();
         filter.SetLayerMask(obstacleMask);
@@ -117,7 +173,10 @@ public sealed class RollingCarrier : MonoBehaviour
         for (int index = 0; index < count; index++)
         {
             Rigidbody2D rider = riders[index].attachedRigidbody;
-            if (rider == null || rider == body || rider.linearVelocity.y > 0.5f)
+            if (rider == null || rider == body || rider.linearVelocity.y > 0.5f
+                || rider.GetComponent<MovingPlatform>() != null)
+                continue;
+            if (riders[index].bounds.min.y < bounds.max.y - 0.08f)
                 continue;
             RobotEnemy ridingRobot = rider.GetComponent<RobotEnemy>();
             if (ridingRobot != null && ridingRobot.IsFlying)

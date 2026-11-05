@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-16
+/// 스크립트 최종 수정일: 2026-11-01
 /// 기능: 영역에 닿은 플레이어와 적을 사망 처리한다.
 /// </summary>
 
@@ -16,6 +16,13 @@ public class DeadZone : MonoBehaviour
 
         if (collision.attachedRigidbody != null)
             enteringObject = collision.attachedRigidbody.gameObject;
+
+        UltravioletLight ultraviolet = enteringObject.GetComponentInChildren<UltravioletLight>(true);
+        if (ultraviolet != null)
+        {
+            ultraviolet.RespawnCart();
+            return;
+        }
 
         if (!enteringObject.CompareTag("Player") && enteringObject.GetComponent<RobotEnemy>() == null
             && enteringObject.GetComponent<TurretController>() == null)

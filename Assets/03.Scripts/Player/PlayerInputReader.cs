@@ -1,5 +1,5 @@
 /// <summary>
-/// 스크립트 최종 수정일: 2026-10-29
+/// 스크립트 최종 수정일: 2026-11-05
 /// 기능: Unity Input System에서 이동, 공격, 시간 전환과 상호작용, 카메라 둘러보기 입력을 전달한다.
 /// </summary>
 
@@ -20,7 +20,8 @@ public sealed class PlayerInputReader : MonoBehaviour
         get;
         private set;
     }              // 현재 이동 입력값 프로퍼티
-    public bool IsInteractHeld => interactAction != null && interactAction.IsPressed(); // F키를 누르고 있는 상태
+    public bool IsInteractHeld => isActiveAndEnabled && interactAction != null && interactAction.IsPressed();
+    public float Scroll => Mouse.current == null ? 0f : Mouse.current.scroll.ReadValue().y;
     public bool IsCameraPeekHeld => cameraPeekAction != null && cameraPeekAction.IsPressed() && Mouse.current != null;
     public Vector2 PointerPosition // 현재 마우스 화면 좌표
     {
