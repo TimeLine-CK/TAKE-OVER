@@ -30,6 +30,8 @@ public sealed class CrossingGate : Interactable
         if (!CanInteract(flag))
             return;
         SetOn(!IsOn);
+        if (IsOn)
+            GameSfx.Play(GameSfx.Cue.Lever);
         base.Interact(player);
     }
     public void SetOn(bool value)

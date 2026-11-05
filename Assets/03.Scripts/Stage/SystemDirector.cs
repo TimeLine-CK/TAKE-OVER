@@ -211,6 +211,6 @@ public class SystemDirector : MonoBehaviour
     public void RestartTutorial()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene("UR-1-A");
+        SceneTransition.Load("UR-1-A");
     }
 }

@@ -92,7 +92,7 @@ public sealed class TurretProjectile : MonoBehaviour
         if (target != null && target.CompareTag("Player"))
         {
             consumed = true;
-            target.TakeDamage(damage, DamageSource.Enemy);
+            target.TakeDamage(damage, DamageSource.Enemy, knockbackDirection: direction.x);
             Despawn();
         }
         else if (!other.isTrigger && (obstacleMask.value & (1 << other.gameObject.layer)) != 0)

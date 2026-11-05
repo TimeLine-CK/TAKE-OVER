@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5819772817962729050
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8829334374260042409}
+  - component: {fileID: 3099291400543897743}
+  m_Layer: 0
+  m_Name: GameSfx
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8829334374260042409
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5819772817962729050}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3099291400543897743
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5819772817962729050}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 013be5ca90153c44faf733943b3c9986, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameSfx
+  sounds:
+  - Clip: {fileID: 8300000, guid: 1552f1b825f2bc747b38d34577087be3, type: 3}
+    Volume: 0.32
+  - Clip: {fileID: 8300000, guid: 6d48baff48853af4ba463c863d4ea151, type: 3}
+    Volume: 0.53
+  - Clip: {fileID: 8300000, guid: 74108b73d386f7046bcbdf6b09107bd1, type: 3}
+    Volume: 0.67
+  - Clip: {fileID: 8300000, guid: 13b2522395f13f442bc8e1bdf54d03e0, type: 3}
+    Volume: 0.66
+  - Clip: {fileID: 8300000, guid: c2b6449df4fa9814595c3f9dfe306441, type: 3}
+    Volume: 0.52
+  - Clip: {fileID: 8300000, guid: 9e4dd963e5133fd4da306b1bfffa25f9, type: 3}
+    Volume: 0.24
+  - Clip: {fileID: 8300000, guid: 8c29cbeaeef193e4f9caaa4fb9054728, type: 3}
+    Volume: 0.85
+  - Clip: {fileID: 8300000, guid: 5691d37b84743d44195e252ed69eb498, type: 3}
+    Volume: 0.34
+  - Clip: {fileID: 8300000, guid: 25197c057194646418f5e6284b5cded3, type: 3}
+    Volume: 0.28

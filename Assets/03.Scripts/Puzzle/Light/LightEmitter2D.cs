@@ -14,13 +14,15 @@ public sealed class LightEmitter2D : MonoBehaviour
     [SerializeField, Min(0.1f)] private float maximumDistance = 50f; // 빛이 이동할 전체 거리
     [SerializeField, Range(0, 64)] private int maximumReflections = 16; // 반사 횟수 제한
 
+    [SerializeField, Range(0f, 10f)] private float aimAssistAngle = 5f; // 반사광의 목표 탐색 각도
+
     private const float SurfaceOffset = 0.005f;
     private LineRenderer lineRenderer;
     private TimeFlagWolrdRoot worldRoot;
     private TimeShiftController timeShift;
     private Vector3[] points;
     private readonly RaycastHit2D[] hits = new RaycastHit2D[32];
-    private Collider2D[] mirrorSurfaces;
+    private Collider2D[] aimTargets;
 
     private void Awake()
     {
@@ -42,11 +44,11 @@ public sealed class LightEmitter2D : MonoBehaviour
     private void OnEnable()
     {
         if (timeShift != null)
-            timeShift.WorldsReady += RefreshMirrorSurfaces;
-        RefreshMirrorSurfaces();
+            timeShift.WorldsReady += RefreshAimTargets;
+        RefreshAimTargets();
     }
 
-    private void RefreshMirrorSurfaces()
+    private void RefreshAimTargets()
     {
         TimeFlagWolrdRoot past = null;
         TimeFlagWolrdRoot present = null;
@@ -69,7 +71,20 @@ public sealed class LightEmitter2D : MonoBehaviour
                     surfaces.Add(surface);
             }
         }
-        mirrorSurfaces = surfaces.ToArray();
+        foreach (SolarBattery battery in FindObjectsByType<SolarBattery>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (battery.gameObject.scene != gameObject.scene
+                && (timeShift == null || battery.gameObject.scene != timeShift.gameObject.scene)
+                && (past == null || battery.gameObject.scene != past.gameObject.scene)
+                && (present == null || battery.gameObject.scene != present.gameObject.scene))
+                continue;
+            foreach (Collider2D surface in battery.GetComponentsInChildren<Collider2D>(true))
+            {
+                if (battery.IsSolarPanel(surface))
+                    surfaces.Add(surface);
+            }
+        }
+        aimTargets = surfaces.ToArray();
     }
 
     private void LateUpdate()
@@ -99,7 +114,7 @@ public sealed class LightEmitter2D : MonoBehaviour
         Physics2D.SyncTransforms();
         ContactFilter2D filter = new ContactFilter2D();
         filter.SetLayerMask(obstacleMask);
-        filter.useTriggers = false;
+        filter.useTriggers = true;
         Vector2 origin = transform.position;
         if (LightStartPoint != null)
             origin = LightStartPoint.position;
@@ -117,6 +132,12 @@ public sealed class LightEmitter2D : MonoBehaviour
             for (int index = 0; index < count; index++)
             {
                 RaycastHit2D hit = hits[index];
+                if (hit.collider.isTrigger)
+                {
+                    SolarBattery receiver = hit.collider.GetComponentInParent<SolarBattery>();
+                    if (receiver == null || !receiver.IsSolarPanel(hit.collider))
+                        continue;
+                }
                 if (hit.collider == previousSurface && hit.distance <= SurfaceOffset * 2f)
                     continue;
                 if (hit.distance < nearestDistance)
@@ -161,8 +182,8 @@ public sealed class LightEmitter2D : MonoBehaviour
     private void UpdateMirrorAim(MirrorReflector2D mirror, Collider2D source, Vector2 origin,
         Vector2 direction, float distance, ContactFilter2D filter)
     {
-        float bestError = 6f;
-        foreach (Collider2D target in mirrorSurfaces)
+        float bestError = aimAssistAngle;
+        foreach (Collider2D target in aimTargets)
         {
             if (target == null || target == source || !target.enabled || !target.gameObject.activeInHierarchy)
                 continue;
@@ -173,7 +194,13 @@ public sealed class LightEmitter2D : MonoBehaviour
             if (offset.sqrMagnitude < SurfaceOffset * SurfaceOffset || offset.sqrMagnitude > distance * distance)
                 continue;
             float error = Vector2.SignedAngle(direction, offset);
-            if (Mathf.Abs(error) >= Mathf.Abs(bestError) || Vector2.Dot(offset, target.transform.up) >= 0f)
+            MirrorReflector2D targetMirror = target.GetComponentInParent<MirrorReflector2D>();
+            SolarBattery targetBattery = target.GetComponentInParent<SolarBattery>();
+            if (targetMirror != null && (!targetMirror.isActiveAndEnabled || Vector2.Dot(offset, target.transform.up) >= 0f))
+                continue;
+            if (targetBattery != null && !targetBattery.isActiveAndEnabled)
+                continue;
+            if (Mathf.Abs(error) >= Mathf.Abs(bestError))
                 continue;
 
             int count = Physics2D.Raycast(origin, offset.normalized, filter, hits, offset.magnitude + SurfaceOffset);
@@ -181,7 +208,14 @@ public sealed class LightEmitter2D : MonoBehaviour
             float nearestDistance = float.PositiveInfinity;
             for (int index = 0; index < count; index++)
             {
-                if (hits[index].collider == source && hits[index].distance <= SurfaceOffset * 2f)
+                Collider2D blocker = hits[index].collider;
+                if (blocker.isTrigger)
+                {
+                    SolarBattery receiver = blocker.GetComponentInParent<SolarBattery>();
+                    if (receiver == null || !receiver.IsSolarPanel(blocker))
+                        continue;
+                }
+                if (blocker == source && hits[index].distance <= SurfaceOffset * 2f)
                     continue;
                 if (hits[index].distance < nearestDistance)
                 {
@@ -192,14 +226,14 @@ public sealed class LightEmitter2D : MonoBehaviour
             if (nearest == target)
                 bestError = error;
         }
-        if (Mathf.Abs(bestError) < 6f)
+        if (Mathf.Abs(bestError) < aimAssistAngle)
             mirror.SetAimError(bestError * 0.5f);
     }
 
     private void OnDisable()
     {
         if (timeShift != null)
-            timeShift.WorldsReady -= RefreshMirrorSurfaces;
+            timeShift.WorldsReady -= RefreshAimTargets;
         if (lineRenderer != null)
             lineRenderer.positionCount = 0;
     }

@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/01.Scenes/03.System/Title.unity
+    guid: 65061377d8d164c4cbca85e0ef7b5c4e
+  - enabled: 1
     path: Assets/01.Scenes/01.Stage/Alpha/S_Pr_1.unity
     guid: c82ffad6d9d1a634e96c75e08633297b
   - enabled: 1
@@ -29,12 +32,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/01.Scenes/01.Stage/Alpha/G_Pa_3.unity
     guid: a749e80f3fd25a64a84c964bdcb711cc
-  - enabled: 0
-    path: Assets/01.Scenes/01.Stage/Tests/Sewer_Present_Test.unity
-    guid: 22e5753b8f7e63f4e8c1767853e00f49
-  - enabled: 1
-    path: Assets/01.Scenes/01.Stage/Tests/Sewer_Past_Test.unity
-    guid: 0a8734fea1cf80940a9a0ebf540eb95d
   - enabled: 1
     path: Assets/01.Scenes/01.Stage/Alpha/D_Pr_1.unity
     guid: 02da9468a55e803409c29165dcbb3f3c

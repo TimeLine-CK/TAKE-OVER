@@ -9,6 +9,15 @@ public sealed class SolarBattery : BatteryCharge
     [SerializeField] private Collider2D solarPanel;
     private int illuminatedFrame = -1;
     public bool IsReceivingLight => illuminatedFrame == Time.frameCount;
+    protected override void Awake()
+    {
+        base.Awake();
+        if (solarPanel != null)
+            solarPanel.isTrigger = true;
+    }
+
+    public bool IsSolarPanel(Collider2D surface) => surface != null && surface == solarPanel;
+
     public void ReceiveLight(Collider2D surface)
     {
         if (isActiveAndEnabled && surface != null && surface == solarPanel)

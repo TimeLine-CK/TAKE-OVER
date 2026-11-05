@@ -66,7 +66,7 @@ public sealed class Health : MonoBehaviour
     /// 살아 있는 대상에게 피해를 적용하고 사망 이벤트를 전달한다.
     /// </summary>
     public void TakeDamage(int damage, DamageSource source = DamageSource.Other,
-        HitStopType hitType = HitStopType.Normal)
+        HitStopType hitType = HitStopType.Normal, float knockbackDirection = 0f)
     {
         if (IsDead || damage <= 0f)
             return;
@@ -82,6 +82,8 @@ public sealed class Health : MonoBehaviour
                 hitType = HitStopType.Kill;
             HitStopController.Request(hitType);
         }
+        if (!died && knockbackDirection != 0f && TryGetComponent(out PlayerMotor motor))
+            motor.ApplyHitKnockback(knockbackDirection);
         Damaged?.Invoke(source);
 
         if (died)

@@ -22,6 +22,7 @@ public sealed class SewerValve : Interactable
 
     private bool initialized;
     private float heldTime;
+    private AudioSource valveSound;
     private bool completed;
     private MaterialPropertyBlock properties;
 
@@ -75,12 +76,14 @@ public sealed class SewerValve : Interactable
             return;
         }
 
+        GameSfx.SetLoop(gameObject, ref valveSound, GameSfx.Cue.Valve, deltaTime > 0f);
         heldTime += Mathf.Max(0f, deltaTime);
         if (Wheel != null)
             Wheel.Rotate(0f, 0f, -120f * deltaTime);
         if (heldTime >= Mathf.Max(0.01f, HoldDuration))
         {
             completed = true;
+            GameSfx.SetLoop(gameObject, ref valveSound, GameSfx.Cue.Valve, false);
             SetOpen(!isOpen);
             base.Interact(player);
         }
@@ -89,6 +92,7 @@ public sealed class SewerValve : Interactable
 
     public override void EndHoldInteract(PlayerInteractor player)
     {
+        GameSfx.SetLoop(gameObject, ref valveSound, GameSfx.Cue.Valve, false);
         heldTime = 0f;
         completed = false;
         UpdateVisuals();

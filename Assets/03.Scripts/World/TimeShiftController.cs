@@ -260,6 +260,7 @@ public sealed class TimeShiftController : MonoBehaviour
         currentWorld.SetWorldActive(false);
         destinationWorld.SetWorldActive(true);
         currentFlag = destinationFlag;
+        GameSfx.Play(GameSfx.Cue.TimeTransition);
         isPreparing = false;
         WorldChanged?.Invoke(currentFlag);
         UpdatePreviews();

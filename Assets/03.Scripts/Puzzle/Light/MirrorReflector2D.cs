@@ -46,10 +46,10 @@ public sealed class MirrorReflector2D : Interactable
         {
             deltaAngle = -deltaAngle;
         }
-        if (aimFrame >= Time.frameCount - 1)
+        if (aimFrame >= Time.frameCount - 1 && aimError * deltaAngle > 0f
+            && Mathf.Abs(aimError - deltaAngle) <= 2.5f)
         {
-            float correctionLimit = Mathf.Abs(deltaAngle) * 0.8f;
-            deltaAngle += Mathf.Clamp(aimError, -correctionLimit, correctionLimit);
+            deltaAngle = aimError;
         }
         controller.RotateMirror(this, deltaAngle);
     }

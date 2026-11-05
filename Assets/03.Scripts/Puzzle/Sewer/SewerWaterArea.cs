@@ -51,6 +51,7 @@ public sealed class SewerWaterArea : MonoBehaviour
     private readonly List<SewerValve> valves = new();
     private BoxCollider2D area;
     private float depth;
+    private AudioSource waterRiseSound;
     private float bottomOffset;
     private TimeShiftController timeShift;
     private Renderer waterRenderer;
@@ -93,6 +94,7 @@ public sealed class SewerWaterArea : MonoBehaviour
 
     private void OnDisable()
     {
+        GameSfx.SetLoop(gameObject, ref waterRiseSound, GameSfx.Cue.WaterUp, false);
         if (timeShift != null)
         {
             timeShift.WorldChanged -= UpdateWaterColors;
@@ -168,7 +170,9 @@ public sealed class SewerWaterArea : MonoBehaviour
         float speed = RiseSpeed;
         if (depth > target)
             speed = DrainSpeed;
-        depth = Mathf.MoveTowards(depth, target, Mathf.Max(0f, speed) * Time.fixedDeltaTime);
+        float nextDepth = Mathf.MoveTowards(depth, target, Mathf.Max(0f, speed) * Time.fixedDeltaTime);
+        GameSfx.SetLoop(gameObject, ref waterRiseSound, GameSfx.Cue.WaterUp, nextDepth > depth);
+        depth = nextDepth;
         UpdateVisuals();
         if (depth <= 0.001f)
             return;

@@ -40,9 +40,12 @@ public abstract class BatteryCharge : MonoBehaviour
         float next = Mathf.MoveTowards(charge, 100, chargePerSecond * Time.deltaTime);
         if (Mathf.Approximately(next, charge))
             return;
+        int previousSlots = visibleSlotCount;
         charge = next;
         StageProgress.SetCharge(BatteryId, charge);
         UpdateSlots();
+        for (int i = previousSlots; i < visibleSlotCount; i++)
+            GameSfx.Play(GameSfx.Cue.BatteryUp);
         ApplyCompletion();
     }
     public void RestoreCharge(float value)

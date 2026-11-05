@@ -161,9 +161,6 @@ MonoBehaviour:
   - G_Pr_2/InfraredBattery02
   - G_Pr_3/UVBattery1
   - G_Pr_3/UVBattery2
-  RequiredClearScenes:
-  - G_Pr_2
-  - G_Pr_3
   OnUnlocked:
     m_PersistentCalls:
       m_Calls: []

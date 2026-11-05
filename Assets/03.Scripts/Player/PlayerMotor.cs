@@ -126,11 +126,38 @@ public sealed class PlayerMotor : MonoBehaviour
     {
         body.linearVelocity = Vector2.zero;
         body.angularVelocity = 0f;
+        hitKnockbackVelocity = 0f;
         verticalVelocity = 0f;
         jumpBufferRemaining = 0f;
         coyoteTimeRemaining = 0f;
         hasJumpedThisPhysicsTick = false;
         isGrounded = false;
+    }
+
+    private float hitKnockbackVelocity;
+
+    public void ApplyHitKnockback(float direction)
+    {
+        if (Mathf.Abs(direction) < 0.01f)
+            return;
+
+        interactor?.StopInteraction();
+        hitKnockbackVelocity = Mathf.Sign(direction) * 3f;
+    }
+
+    private AudioSource runSound;
+
+    private void LateUpdate()
+    {
+        bool running = Time.timeScale > 0f && isGrounded && hitKnockbackVelocity == 0f
+            && Mathf.Abs(inputReader.Move.x) > 0.01f && Mathf.Abs(body.linearVelocity.x) > 0.1f
+            && (interactor == null || !interactor.IsControllingCarrier);
+        GameSfx.SetLoop(gameObject, ref runSound, GameSfx.Cue.Run, running);
+    }
+
+    private void OnDisable()
+    {
+        GameSfx.SetLoop(gameObject, ref runSound, GameSfx.Cue.Run, false);
     }
 
     private void FixedUpdate()
@@ -156,7 +183,12 @@ public sealed class PlayerMotor : MonoBehaviour
         Vector2 velocity = body.linearVelocity;
         velocity.y = verticalVelocity;
 
-        if (interactor != null && interactor.IsControllingCarrier)
+        if (hitKnockbackVelocity != 0f)
+        {
+            velocity.x = hitKnockbackVelocity;
+            hitKnockbackVelocity = Mathf.MoveTowards(hitKnockbackVelocity, 0f, 25f * deltaTime);
+        }
+        else if (interactor != null && interactor.IsControllingCarrier)
         {
             velocity.x = 0f;
         }

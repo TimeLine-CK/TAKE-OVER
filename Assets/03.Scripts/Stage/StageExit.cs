@@ -135,7 +135,6 @@ public sealed class StageExit : MonoBehaviour
             StageProgress.Switches["StageClear/" + gameObject.scene.name] = true;
         HitStopController.Cancel();
         Time.timeScale = 1f;
-        player.SetActive(false);
-        SceneManager.LoadSceneAsync(nextSceneName, LoadSceneMode.Single);
+        SceneTransition.Load(nextSceneName);
     }
 }

@@ -84,6 +84,7 @@ public class RobotEnemy : MonoBehaviour
     private void Awake()
     {
         body = GetComponent<Rigidbody2D>();
+        body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
         spriteRenderer = GetComponentInChildren<SpriteRenderer>();
         animator = GetComponentInChildren<Animator>();
         health = GetComponent<Health>();
@@ -179,17 +180,10 @@ public class RobotEnemy : MonoBehaviour
             StopMoving();
             return;
         }
-        if (!ready)
-        {
-            EnterState(RobotState.Alert);
-            StopMoving();
-            return;
-        }
-
         float offset = player.position.x - body.position.x;
         float distance = Vector2.Distance(body.position, player.position);
         SetFacingDirection(offset);
-        if (distance <= AttackRange && attackDelay <= 0f
+        if (ready && distance <= AttackRange && attackDelay <= 0f
             && awareness.HasLineOfSight(body.position, player.position, SightObstacleMask))
         {
             attackDirection = Mathf.Sign(offset);
@@ -257,7 +251,7 @@ public class RobotEnemy : MonoBehaviour
             || !awareness.HasLineOfSight(body.position, player.position, SightObstacleMask))
             return;
         hasHit = true;
-        playerHealth.TakeDamage(AttackDamage, DamageSource.Enemy);
+        playerHealth.TakeDamage(AttackDamage, DamageSource.Enemy, knockbackDirection: attackDirection);
     }
 
     private void OnDamaged(DamageSource source)
@@ -374,6 +368,7 @@ public class RobotEnemy : MonoBehaviour
             remaining = Mathf.Max(0f, AttackDuration);
             hasHit = false;
             animation = attackStateHash;
+            GameSfx.Play(GameSfx.Cue.RobotAttack);
         }
         else if (next == RobotState.Hit)
         {

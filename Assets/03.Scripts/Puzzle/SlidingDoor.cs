@@ -26,6 +26,15 @@ public sealed class SlidingDoor : MonoBehaviour
         body.bodyType = RigidbodyType2D.Kinematic;
         body.gravityScale = 0f;
         body.freezeRotation = true;
+        int groundLayer = LayerMask.NameToLayer("Ground");
+        if (groundLayer >= 0)
+        {
+            foreach (Collider2D collider in GetComponentsInChildren<Collider2D>(true))
+            {
+                if (!collider.isTrigger && collider.attachedRigidbody == body)
+                    collider.gameObject.layer = groundLayer;
+            }
+        }
         closedPosition = body.position;
     }
 

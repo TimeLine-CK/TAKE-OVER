@@ -254,6 +254,6 @@ public sealed class ElevatorController : Interactable
         Close();
         HitStopController.Cancel();
         Time.timeScale = 1;
-        SceneManager.LoadSceneAsync(scene, LoadSceneMode.Single);
+        SceneTransition.Load(scene);
     }
 }
