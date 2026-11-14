@@ -5537,7 +5537,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf364525d91e5eb44be499030aad6cd1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PersistentPuzzlePose
-  StateId: G_Pr_3/UltravioletCart
+  StateId: G_Pr_3/UltravioletCart-1
 --- !u!4 &406226126 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4625244541189681067, guid: 29a70fc97a85f7a43be0dac6372be12e, type: 3}
@@ -8385,7 +8385,7 @@ MonoBehaviour:
   onInteract:
     m_PersistentCalls:
       m_Calls: []
-  GateId: G_Pr_3/CrossingGate (1)
+  GateId: G_Pr_3/CrossingGate-1
   PuzzleId: UV01
   Code: {fileID: 638439837}
   Grip_F: {fileID: 638439836}
@@ -9737,7 +9737,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf364525d91e5eb44be499030aad6cd1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PersistentPuzzlePose
-  StateId: G_Pr_3/UltravioletCart
+  StateId: G_Pr_3/UltravioletCart-2
 --- !u!4 &704046839 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4625244541189681067, guid: 29a70fc97a85f7a43be0dac6372be12e, type: 3}
@@ -22513,7 +22513,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf364525d91e5eb44be499030aad6cd1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PersistentPuzzlePose
-  StateId: G_Pr_3/UltravioletCart
+  StateId: G_Pr_3/UltravioletCart-3
 --- !u!4 &1481677316 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4625244541189681067, guid: 29a70fc97a85f7a43be0dac6372be12e, type: 3}
@@ -28561,7 +28561,7 @@ MonoBehaviour:
   onInteract:
     m_PersistentCalls:
       m_Calls: []
-  GateId: G_Pr_3/CrossingGate (1)
+  GateId: G_Pr_3/CrossingGate-2
   PuzzleId: UV02
   Code: {fileID: 684883417}
   Grip_F: {fileID: 417350598}
@@ -31097,7 +31097,7 @@ MonoBehaviour:
   onInteract:
     m_PersistentCalls:
       m_Calls: []
-  GateId: G_Pr_3/CrossingGate (1)
+  GateId: G_Pr_3/CrossingGate-3
   PuzzleId: UV02
   Code: {fileID: 2040429208}
   Grip_F: {fileID: 2040429207}

@@ -25,6 +25,9 @@ public class SystemDirector : MonoBehaviour
     private bool isStopped;
     private float previousTimeScale = 1f;
     private float messageUntil;
+    private string fallbackMessage;
+    private GameObject checkpointNotice;
+    private float checkpointNoticeUntil;
 
     /// <summary>
     /// 플레이어가 마지막으로 들어간 체크포인트를 저장한다.
@@ -38,7 +41,21 @@ public class SystemDirector : MonoBehaviour
             currentCheckpoint.SetActivated(false);
         currentCheckpoint = checkpoint;
         currentCheckpoint.SetActivated(true);
-        ShowMessage("CHECKPOINT SAVED");
+        if (checkpointNotice == null)
+        {
+            GameObject prefab = Resources.Load<GameObject>("CheckpointNotice");
+            if (prefab != null)
+                checkpointNotice = Instantiate(prefab, transform);
+        }
+        if (checkpointNotice != null)
+        {
+            checkpointNoticeUntil = Time.unscaledTime + 2f;
+            checkpointNotice.SetActive(true);
+        }
+        else
+        {
+            ShowMessage("체크포인트 설정");
+        }
     }
 
     /// <summary>
@@ -74,6 +91,9 @@ public class SystemDirector : MonoBehaviour
         {
             HelthCheck();
         }
+        if (checkpointNotice != null && checkpointNotice.activeSelf && Time.unscaledTime >= checkpointNoticeUntil)
+            checkpointNotice.SetActive(false);
+
         if (messageLabel != null && Time.unscaledTime >= messageUntil)
             messageLabel.gameObject.SetActive(false);
     }
@@ -131,6 +151,12 @@ public class SystemDirector : MonoBehaviour
         Vector3 respawnPosition = startPosition;
         if (currentCheckpoint != null)
         {
+            TimeFlagWolrdRoot checkpointWorld = currentCheckpoint.GetComponentInParent<TimeFlagWolrdRoot>(true);
+            if (checkpointWorld != null && playerObj.TryGetComponent(out TimeShiftController shift)
+                && shift.CurrentFlag != checkpointWorld.TimeFlag)
+            {
+                shift.RestoreWorld(checkpointWorld.TimeFlag);
+            }
             Vector2 checkpointPosition = currentCheckpoint.Position;
             respawnPosition.x = checkpointPosition.x;
             respawnPosition.y = checkpointPosition.y;
@@ -183,10 +209,20 @@ public class SystemDirector : MonoBehaviour
     /// <summary>
     /// 체크포인트와 출구 안내를 짧은 시간 표시한다.
     /// </summary>
+    private void OnGUI()
+    {
+        if (messageLabel == null && Time.unscaledTime < messageUntil && !string.IsNullOrEmpty(fallbackMessage))
+            GUI.Box(new Rect((Screen.width - 360f) / 2f, 24f, 360f, 32f), fallbackMessage);
+    }
+
     public void ShowMessage(string message)
     {
         if (messageLabel == null)
+        {
+            fallbackMessage = message;
+            messageUntil = Time.unscaledTime + 2f;
             return;
+        }
         messageLabel.text = message;
         messageUntil = Time.unscaledTime + 2f;
         messageLabel.gameObject.SetActive(true);

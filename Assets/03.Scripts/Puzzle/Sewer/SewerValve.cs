@@ -55,6 +55,13 @@ public sealed class SewerValve : Interactable
         UpdateVisuals();
     }
 
+    public override string GetPrompt(TimeFlag flag)
+    {
+        if (flag != TimeFlag.Past)
+            return "Past only";
+        return $"Hold F ({HoldDuration:0.#}s) - Turn valve";
+    }
+
     public override bool CanInteract(TimeFlag flag)
     {
         return flag == TimeFlag.Past && WaterArea != null && base.CanInteract(flag);

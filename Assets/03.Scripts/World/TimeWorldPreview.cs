@@ -24,7 +24,7 @@ public sealed class TimeWorldPreview
     /// <summary>
     /// 지형 레이어의 콜라이더를 모으고 미리보기 전용 렌더러를 생성한다.
     /// </summary>
-    public TimeWorldPreview(Transform root, LayerMask terrainMask, Material material, float width, float dash, float gap)
+    public TimeWorldPreview(Transform root, LayerMask terrainMask, Material material, float width, float dash, float gap, Collider2D onlyCollider = null, Color? color = null)
     {
         worldRoot = root;
         lineWidth = Mathf.Max(0.005f, width);
@@ -34,6 +34,9 @@ public sealed class TimeWorldPreview
 
         foreach (Collider2D collider in root.GetComponentsInChildren<Collider2D>(true))
         {
+            if (onlyCollider != null && collider != onlyCollider)
+                continue;
+
             if (collider.isTrigger || !collider.enabled || (terrainMask.value & (1 << collider.gameObject.layer)) == 0)
                 continue;
 
@@ -54,6 +57,13 @@ public sealed class TimeWorldPreview
         previewObject.AddComponent<MeshFilter>().sharedMesh = mesh;
         MeshRenderer renderer = previewObject.AddComponent<MeshRenderer>();
         renderer.sharedMaterial = material;
+        if (color.HasValue)
+        {
+            var properties = new MaterialPropertyBlock();
+            properties.SetColor("_Color", color.Value);
+            renderer.SetPropertyBlock(properties);
+        }
+
         renderer.sortingLayerName = "Foreground";
         renderer.sortingOrder = 100;
         renderer.shadowCastingMode = ShadowCastingMode.Off;

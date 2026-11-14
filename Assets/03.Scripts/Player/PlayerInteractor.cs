@@ -241,6 +241,15 @@ public sealed class PlayerInteractor : MonoBehaviour
             promptLabel.text = CurrentTarget.GetPrompt(GetCurrentFlag());
     }
 
+    private void OnGUI()
+    {
+        if (promptLabel != null || CurrentTarget == null || !CanUseInteraction())
+            return;
+
+        string prompt = CurrentTarget.GetPrompt(GetCurrentFlag());
+        GUI.Box(new Rect((Screen.width - 280f) / 2f, Screen.height - 88f, 280f, 30f), prompt);
+    }
+
     private void OnDisable()
     {
         CurrentTarget = null;

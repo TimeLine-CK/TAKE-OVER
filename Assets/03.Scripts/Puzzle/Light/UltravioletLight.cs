@@ -12,6 +12,10 @@ public sealed class UltravioletLight : MonoBehaviour
     public Renderer BeamRenderer;
     [Range(0f, 1f)] public float MovementMultiplier = 0.5f;
     public float RespawnBelowY = -20f;
+    [Min(0)] public int ExposureDamage = 5;
+    [Min(0.1f)] public float DamageInterval = 1f;
+
+    private float nextDamageTime;
 
     private TimeShiftController timeShift;
     private TimeFlagWolrdRoot worldRoot;
@@ -86,10 +90,16 @@ public sealed class UltravioletLight : MonoBehaviour
                 code.SetIlluminated(this, false);
         previousPlayers.Clear();
         previousCodes.Clear();
+        bool damageDue = players.Count > 0 && Time.time >= nextDamageTime;
+        if (damageDue)
+            nextDamageTime = Time.time + DamageInterval;
+
         foreach (PlayerMotor player in players)
         {
             player.SetUltravioletSlow(this, MovementMultiplier);
             previousPlayers.Add(player);
+            if (damageDue && player.TryGetComponent(out Health health))
+                health.TakeDamage(ExposureDamage, DamageSource.Environment);
         }
         foreach (UltravioletCode code in codes)
         {

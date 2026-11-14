@@ -63,6 +63,8 @@ public sealed class PlayerMotor : MonoBehaviour
 
     private Vector3 visualBaseScale;                                            // 캐릭터 시각 요소의 기본 크기
 
+    public Collider2D GroundCollider => isGrounded ? groundCollider : null;
+    private Collider2D groundCollider;
     private bool isGrounded;                                                    // 현재 바닥에 닿아 있는지 여부
     private int facingDirection = 1;                                            // 현재 바라보는 방향
 
@@ -204,6 +206,7 @@ public sealed class PlayerMotor : MonoBehaviour
         verticalVelocity = velocity.y;
         velocity.y = verticalDistance / deltaTime;
 
+        RecoverShallowFloorEdge(velocity, deltaTime);
         ApplyCornerCorrection(velocity, deltaTime);
         ApplyCameraBounds(ref velocity, deltaTime);
 
@@ -226,6 +229,7 @@ public sealed class PlayerMotor : MonoBehaviour
             (Vector2)worldBounds.extents - (Vector2)playerBounds.extents);
         Vector2 minimum = center - halfSize;
         Vector2 maximum = center + halfSize;
+        maximum.y = float.PositiveInfinity;
         if (allowFallingBelowBounds)
             minimum.y = float.NegativeInfinity;
         Vector2 position = body.position;
@@ -250,9 +254,12 @@ public sealed class PlayerMotor : MonoBehaviour
     /// <summary>
     /// 바닥 충돌을 검사하고 접지 및 코요테 타임을 갱신한다.
     /// </summary>
+    private readonly ContactPoint2D[] groundContacts = new ContactPoint2D[16];
+
     private void UpdateGroundState(float deltaTime)
     {
         bool wasGrounded = isGrounded;
+        groundCollider = null;
         int hitCount = bodyCollider.Cast(
             Vector2.down,
             groundFilter,
@@ -267,15 +274,30 @@ public sealed class PlayerMotor : MonoBehaviour
                 continue;
             if (groundHits[index].normal.y > 0.5f)
             {
+                groundCollider = groundHits[index].collider;
                 isGroundDetected = true;
                 break;
             }
         }
 
-        if (verticalVelocity > 0f)
+        if (!isGroundDetected && verticalVelocity <= 0f)
         {
-            isGroundDetected = false;
+            int contactCount = bodyCollider.GetContacts(groundFilter, groundContacts);
+            for (int index = 0; index < contactCount; index++)
+            {
+                if (groundContacts[index].normal.y > 0.5f)
+                {
+                    groundCollider = groundContacts[index].collider;
+                    if (groundCollider == bodyCollider)
+                        groundCollider = groundContacts[index].otherCollider;
+                    isGroundDetected = true;
+                    break;
+                }
+            }
         }
+
+        if (verticalVelocity > 0f)
+            isGroundDetected = false;
 
         if (verticalVelocity > 0f && body.linearVelocity.y <= 0f)
         {
@@ -681,6 +703,37 @@ public sealed class PlayerMotor : MonoBehaviour
     /// <summary>
     /// 지정한 위치에서 플레이어 콜라이더가 바닥과 겹치는지 검사한다.
     /// </summary>
+    private void RecoverShallowFloorEdge(Vector2 velocity, float deltaTime)
+    {
+        if (velocity.y > 0f || Mathf.Abs(velocity.x) < 0.1f
+            || Mathf.Abs(body.linearVelocity.x) >= 0.1f)
+            return;
+
+        int count = bodyCollider.GetContacts(groundFilter, groundContacts);
+        float foot = bodyCollider.bounds.min.y;
+        for (int i = 0; i < count; i++)
+        {
+            ContactPoint2D contact = groundContacts[i];
+            if (contact.normal.x * Mathf.Sign(velocity.x) > -0.5f)
+                continue;
+            Collider2D surface = contact.collider;
+            if (surface == bodyCollider)
+                surface = contact.otherCollider;
+            if (surface == null)
+                continue;
+            float rise = surface.bounds.max.y - foot + collisionSkin;
+            if (rise <= 0f || rise > 0.08f)
+                continue;
+            Vector2 lifted = body.position + Vector2.up * rise;
+            if (!OverlapsGround(lifted)
+                && !OverlapsGround(lifted + Vector2.right * (velocity.x * deltaTime)))
+            {
+                body.position = lifted;
+                return;
+            }
+        }
+    }
+
     private bool OverlapsGround(Vector2 bodyPosition)
     {
         Bounds bounds = bodyCollider.bounds;

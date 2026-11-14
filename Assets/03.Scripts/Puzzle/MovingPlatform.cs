@@ -17,6 +17,7 @@ public sealed class MovingPlatform : MonoBehaviour
     public bool MovingToEnd => movingToEnd;
 
     private Collider2D bodyCollider;
+    private Collider2D playerCollider;
     private TimeShiftController timeShift;
     private Vector2 startPosition;
     private Vector2 endPosition;
@@ -54,6 +55,7 @@ public sealed class MovingPlatform : MonoBehaviour
         startPosition = StartPoint.position;
         endPosition = EndPoint.position;
         timeShift = PlayerHealth.GetComponent<TimeShiftController>();
+        playerCollider = PlayerHealth.GetComponent<Collider2D>();
         body.position = startPosition;
     }
 
@@ -81,6 +83,13 @@ public sealed class MovingPlatform : MonoBehaviour
             target = endPosition;
         Vector2 next = Vector2.MoveTowards(body.position, target, Mathf.Max(0f, MoveSpeed) * Time.fixedDeltaTime);
         Vector2 movement = next - body.position;
+        if (movement.y < 0f && BlocksPlayerBelow(movement))
+        {
+            movingToEnd = !movingToEnd;
+            previousVelocity = Vector2.zero;
+            body.linearVelocity = Vector2.zero;
+            return;
+        }
         if (movement.sqrMagnitude > 0f)
         {
             MoveRiders(bodyCollider, body, movement, previousVelocity, riders);
@@ -103,8 +112,9 @@ public sealed class MovingPlatform : MonoBehaviour
         Bounds bounds = bodyCollider.bounds;
         ContactFilter2D filter = ContactFilter2D.noFilter;
         filter.useTriggers = false;
-        Vector2 center = new(bounds.center.x, bounds.max.y + 0.07f);
-        Vector2 size = new(Mathf.Max(0.01f, bounds.size.x - 0.04f), 0.18f);
+        float rise = Mathf.Max(0f, movement.y);
+        Vector2 center = new(bounds.center.x, bounds.max.y + 0.07f + rise * 0.5f);
+        Vector2 size = new(Mathf.Max(0.01f, bounds.size.x - 0.04f), 0.18f + rise);
         int count = Physics2D.OverlapBox(center, size, 0f, filter, riders);
         for (int index = 0; index < count; index++)
         {
@@ -120,7 +130,8 @@ public sealed class MovingPlatform : MonoBehaviour
                 if (!motor.IsGrounded && rider.linearVelocity.y > 0.5f)
                     continue;
             }
-            else if (rider.linearVelocity.y - Mathf.Max(0f, previousVelocity.y) > 0.5f)
+            else if (rider.GetComponent<RollingCarrier>() == null
+                && rider.linearVelocity.y - Mathf.Max(0f, previousVelocity.y) > 0.5f)
                 continue;
             RobotEnemy robot = rider.GetComponent<RobotEnemy>();
             if (robot != null && robot.IsFlying)
@@ -129,9 +140,32 @@ public sealed class MovingPlatform : MonoBehaviour
             for (int prior = 0; prior < index; prior++)
                 if (riders[prior].attachedRigidbody == rider)
                     duplicate = true;
-            if (!duplicate)
+            if (duplicate)
+                continue;
+            if (rider.TryGetComponent(out RollingCarrier cart))
+            {
+                if (body.GetComponent<RollingCarrier>() == null)
+                    cart.MoveWithPlatform(movement, body);
+            }
+            else
                 rider.position += movement;
         }
+    }
+
+    private bool BlocksPlayerBelow(Vector2 movement)
+    {
+        if (playerCollider == null)
+            playerCollider = PlayerHealth.GetComponent<Collider2D>();
+        if (playerCollider == null || !playerCollider.enabled)
+            return false;
+
+        Bounds platform = bodyCollider.bounds;
+        Bounds player = playerCollider.bounds;
+        return player.center.y < platform.center.y
+            && player.max.y >= platform.min.y + movement.y
+            && player.min.y < platform.min.y
+            && player.max.x > platform.min.x + movement.x
+            && player.min.x < platform.max.x + movement.x;
     }
 
     private void OnDisable()

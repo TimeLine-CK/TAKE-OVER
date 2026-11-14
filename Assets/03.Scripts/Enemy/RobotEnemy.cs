@@ -77,6 +77,7 @@ public class RobotEnemy : MonoBehaviour
     private Vector2 launchVelocity;
     private Vector2 startPosition;
     private float originalGravity;
+    private readonly ContactPoint2D[] flightContacts = new ContactPoint2D[8];
     private float launchFloor;
     private float flightRemaining;
     private bool flightPending;
@@ -204,6 +205,11 @@ public class RobotEnemy : MonoBehaviour
     {
         if (HitStopController.IsActive)
             return;
+        if (!health.IsDead && body.position.y < startPosition.y - 40f)
+        {
+            health.TakeDamage(health.CurrentHealth, DamageSource.Environment);
+            return;
+        }
         if (state == RobotState.Hit)
         {
             body.linearVelocity = new Vector2(hitKnockbackVelocity, body.linearVelocity.y);
@@ -306,13 +312,26 @@ public class RobotEnemy : MonoBehaviour
             health.TakeDamage(health.CurrentHealth, DamageSource.Environment);
             return;
         }
-        if (flightRemaining <= 0f)
+        if (flightRemaining <= 0f && HasLanded())
         {
             body.gravityScale = originalGravity;
             StopMoving();
             attackDelay = Mathf.Max(attackDelay, FlightAttackDelay);
             ResumeTracking(CanDetectPlayer(), awareness.IsReady);
         }
+    }
+
+    private bool HasLanded()
+    {
+        if (body.linearVelocity.y > 0.1f)
+            return false;
+        int count = body.GetContacts(flightContacts);
+        for (int i = 0; i < count; i++)
+        {
+            if (flightContacts[i].normal.y > 0.5f)
+                return true;
+        }
+        return false;
     }
 
     private void Die()

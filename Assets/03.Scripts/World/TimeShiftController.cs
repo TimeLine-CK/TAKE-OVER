@@ -86,10 +86,48 @@ public sealed class TimeShiftController : MonoBehaviour
             UpdatePreviews();
     }
 
+    private PlayerMotor motor;
+    private Collider2D highlightedPlatform;
+    private TimeWorldPreview platformWarning;
+
+    private void UpdatePlatformWarning()
+    {
+        Collider2D warning = null;
+        if (isReady && previewMaterial != null)
+        {
+            if (motor == null)
+                motor = GetComponent<PlayerMotor>();
+            Collider2D support = motor != null ? motor.GroundCollider : null;
+            if (support != null && support.transform.IsChildOf(GetWorld(currentFlag).transform))
+                warning = support;
+        }
+
+        if (warning == highlightedPlatform)
+            return;
+        ClearPlatformWarning();
+        if (warning != null)
+        {
+            highlightedPlatform = warning;
+            platformWarning = new TimeWorldPreview(warning.transform, destinationObstacleMask, previewMaterial,
+                previewLineWidth, previewDashLength, previewGapLength, warning, new Color(1f, 0.95f, 0.05f, 1f));
+            platformWarning.SetVisible(true);
+        }
+    }
+
+    private void ClearPlatformWarning()
+    {
+        platformWarning?.SetVisible(false);
+        platformWarning?.Dispose();
+        platformWarning = null;
+        highlightedPlatform = null;
+    }
+
     private void LateUpdate()
     {
         presentPreview?.Refresh();
         pastPreview?.Refresh();
+        platformWarning?.Refresh();
+        UpdatePlatformWarning();
     }
 
     /// <summary>
@@ -179,6 +217,7 @@ public sealed class TimeShiftController : MonoBehaviour
         transitionRoutine = null;
         isPreparing = false;
         isTransitioning = false;
+        ClearPlatformWarning();
         presentPreview?.SetVisible(false);
         pastPreview?.SetVisible(false);
 
@@ -321,6 +360,7 @@ public sealed class TimeShiftController : MonoBehaviour
 
     private void UpdatePreviews()
     {
+        UpdatePlatformWarning();
         presentPreview?.SetVisible(currentFlag == TimeFlag.Past);
         pastPreview?.SetVisible(currentFlag == TimeFlag.Present);
     }

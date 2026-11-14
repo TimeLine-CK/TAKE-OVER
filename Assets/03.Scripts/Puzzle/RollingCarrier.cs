@@ -25,15 +25,45 @@ public sealed class RollingCarrier : MonoBehaviour
     private Health playerHealth;
     private PlayerInteractor controller;
     private float speed;
+    private Vector2 spawnPosition;
+    private float spawnRotation;
+    private readonly Collider2D[] platformRiders = new Collider2D[16];
+
+    internal void MoveWithPlatform(Vector2 movement, Rigidbody2D platform)
+    {
+        if (!platform.TryGetComponent(out Collider2D surface) || !HasSupportWidth(surface, 0f))
+            return;
+        if (Mathf.Abs(movement.y) < 0.001f && HasStaticSupport(platform))
+            return;
+        MovingPlatform.MoveRiders(bodyCollider, body, movement, Vector2.zero, platformRiders);
+        body.position += movement;
+        verticalSpeed = 0f;
+    }
     private float verticalSpeed;
     private readonly RaycastHit2D[] hits = new RaycastHit2D[16];
     private readonly Collider2D[] riders = new Collider2D[16];
     private readonly HashSet<RobotEnemy> struckRobots = new();
 
+    private bool HasStaticSupport(Rigidbody2D platform)
+    {
+        ContactFilter2D filter = new ContactFilter2D();
+        filter.SetLayerMask(obstacleMask);
+        int count = bodyCollider.Cast(Vector2.down, filter, hits, 0.06f);
+        for (int i = 0; i < count; i++)
+        {
+            if (hits[i].normal.y > 0.5f && HasSupportWidth(hits[i].collider, 0f) && hits[i].rigidbody != platform
+                && (hits[i].rigidbody == null || hits[i].rigidbody.bodyType == RigidbodyType2D.Static))
+                return true;
+        }
+        return false;
+    }
+
     private void Awake()
     {
         body = GetComponent<Rigidbody2D>();
         bodyCollider = GetComponent<BoxCollider2D>();
+        spawnPosition = body.position;
+        spawnRotation = body.rotation;
         body.bodyType = RigidbodyType2D.Kinematic;
         body.useFullKinematicContacts = true;
         GameObject player = GameObject.FindGameObjectWithTag("Player");
@@ -119,6 +149,13 @@ public sealed class RollingCarrier : MonoBehaviour
     {
         if (controller != null && !controller.IsControllingCarrier)
             controller.StopInteraction();
+        if (body.position.y < spawnPosition.y - 40f)
+        {
+            RestoreState();
+            body.position = spawnPosition;
+            body.rotation = spawnRotation;
+            return;
+        }
         float impactSpeed = speed;
         float movementSpeed = speed;
         if (controller != null)
@@ -138,7 +175,7 @@ public sealed class RollingCarrier : MonoBehaviour
         int count = bodyCollider.Cast(Vector2.right * Mathf.Sign(movementSpeed), filter, hits, Mathf.Abs(distance) + 0.02f);
         for (int index = 0; index < count; index++)
         {
-            if (hits[index].normal.x * movementSpeed >= 0f)
+            if (hits[index].normal.y >= 0.5f || hits[index].normal.x * movementSpeed >= 0f)
                 continue;
             float allowed = Mathf.Max(0f, hits[index].distance - 0.02f);
             if (allowed >= Mathf.Abs(distance))
@@ -154,7 +191,7 @@ public sealed class RollingCarrier : MonoBehaviour
             count = bodyCollider.Cast(Vector2.down, filter, hits, -fallDistance + 0.02f);
             for (int index = 0; index < count; index++)
             {
-                if (hits[index].normal.y <= 0f)
+                if (hits[index].normal.y <= 0f || !HasSupportWidth(hits[index].collider, distance))
                     continue;
                 float allowed = Mathf.Max(0f, hits[index].distance - 0.02f);
                 if (allowed >= -fallDistance)
@@ -163,6 +200,8 @@ public sealed class RollingCarrier : MonoBehaviour
                 verticalSpeed = 0f;
             }
         }
+        if (RecoverPlatformSupport(filter, distance, ref fallDistance))
+            verticalSpeed = 0f;
         Vector2 movement = new Vector2(distance, fallDistance);
 
         Bounds bounds = bodyCollider.bounds;
@@ -214,6 +253,74 @@ public sealed class RollingCarrier : MonoBehaviour
     /// <summary>
     /// 플레이어가 카트 옆면에 붙어 카트 쪽으로 입력할 때만 미는 속도를 반환한다.
     /// </summary>
+    private readonly Collider2D[] supportSurfaces = new Collider2D[32];
+    private readonly List<Vector2> supportSpans = new(32);
+
+    private bool HasSupportWidth(Collider2D surface, float horizontalOffset)
+    {
+        Bounds cart = bodyCollider.bounds;
+        Bounds support = surface.bounds;
+        float overlap = Mathf.Min(cart.max.x + horizontalOffset, support.max.x)
+            - Mathf.Max(cart.min.x + horizontalOffset, support.min.x);
+        if (overlap >= cart.extents.x)
+            return true;
+
+        ContactFilter2D filter = new();
+        filter.SetLayerMask(obstacleMask);
+        filter.useTriggers = false;
+        float left = cart.min.x + horizontalOffset;
+        float right = cart.max.x + horizontalOffset;
+        Vector2 center = new(cart.center.x + horizontalOffset, support.max.y - 0.02f);
+        int count = Physics2D.OverlapBox(center, new Vector2(cart.size.x, 0.12f), 0f, filter, supportSurfaces);
+        supportSpans.Clear();
+        for (int i = 0; i < count; i++)
+        {
+            Collider2D candidate = supportSurfaces[i];
+            Bounds bounds = candidate.bounds;
+            if (candidate.attachedRigidbody == body || Mathf.Abs(bounds.max.y - support.max.y) > 0.04f)
+                continue;
+            float min = Mathf.Max(left, bounds.min.x);
+            float max = Mathf.Min(right, bounds.max.x);
+            if (max > min)
+                supportSpans.Add(new Vector2(min, max));
+        }
+
+        supportSpans.Sort(CompareSupportSpans);
+        float covered = 0f;
+        float edge = left;
+        foreach (Vector2 span in supportSpans)
+        {
+            covered += Mathf.Max(0f, span.y - Mathf.Max(edge, span.x));
+            edge = Mathf.Max(edge, span.y);
+        }
+        return covered >= cart.extents.x;
+    }
+
+    private static int CompareSupportSpans(Vector2 a, Vector2 b)
+    {
+        return a.x.CompareTo(b.x);
+    }
+
+    private bool RecoverPlatformSupport(ContactFilter2D filter, float distance, ref float fallDistance)
+    {
+        Bounds bounds = bodyCollider.bounds;
+        float width = Mathf.Max(0.01f, bounds.size.x - 0.04f);
+        Vector2 center = new(bounds.center.x, bounds.center.y - 0.01f);
+        int count = Physics2D.OverlapBox(center, new Vector2(width, bounds.size.y + 0.02f), 0f, filter, riders);
+        for (int i = 0; i < count; i++)
+        {
+            Collider2D surface = riders[i];
+            if (surface == bodyCollider || (surface.attachedRigidbody == null || surface.attachedRigidbody.GetComponent<MovingPlatform>() == null) || !HasSupportWidth(surface, distance))
+                continue;
+            float gap = bounds.min.y - surface.bounds.max.y;
+            if (gap <= -bounds.size.y || gap > 0.02f)
+                continue;
+            fallDistance = Mathf.Max(fallDistance, 0.02f - gap);
+            return true;
+        }
+        return false;
+    }
+
     private float GetPushSpeed()
     {
         if (playerInput == null || !playerInput.isActiveAndEnabled

@@ -2506,7 +2506,7 @@ MonoBehaviour:
   nextSceneName: G_Pr_1
   requiresClear: 1
   requiresAllEras: 1
-  indicator: {fileID: 0}
+  indicator: {fileID: 403024437}
 --- !u!1 &417749976
 GameObject:
   m_ObjectHideFlags: 0
@@ -8485,7 +8485,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8053608864324201324, guid: 9402a7623dc6e894583b08b28b3deeb0, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8929534941255215861, guid: 9402a7623dc6e894583b08b28b3deeb0, type: 3}
       propertyPath: m_fontStyle

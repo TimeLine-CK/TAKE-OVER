@@ -7713,7 +7713,7 @@ MonoBehaviour:
   onInteract:
     m_PersistentCalls:
       m_Calls: []
-  GateId: G_Pr_3/CrossingGate (1)
+  GateId: G_Pa_3/CrossingGate-1
   PuzzleId: UV02
   Code: {fileID: 740699643}
   Grip_F: {fileID: 740699642}
@@ -13383,7 +13383,7 @@ MonoBehaviour:
   onInteract:
     m_PersistentCalls:
       m_Calls: []
-  GateId: G_Pr_3/CrossingGate (1)
+  GateId: G_Pa_3/CrossingGate-2
   PuzzleId: UV02
   Code: {fileID: 1260536879}
   Grip_F: {fileID: 1260536878}
@@ -22674,7 +22674,7 @@ MonoBehaviour:
   onInteract:
     m_PersistentCalls:
       m_Calls: []
-  GateId: G_Pr_3/CrossingGate (1)
+  GateId: G_Pa_3/CrossingGate-3
   PuzzleId: UV02
   Code: {fileID: 2045266642}
   Grip_F: {fileID: 2045266644}

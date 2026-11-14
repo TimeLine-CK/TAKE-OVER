@@ -17,6 +17,11 @@ public sealed class PersistentPuzzlePose : MonoBehaviour
         started = true;
         if (!StageProgress.Poses.TryGetValue(StateId, out Pose pose))
             return;
+        if (TryGetComponent<RollingCarrier>(out _) && pose.position.y < transform.position.y - 40f)
+        {
+            StageProgress.Poses.Remove(StateId);
+            return;
+        }
         transform.SetPositionAndRotation(pose.position, pose.rotation);
         if (TryGetComponent(out Rigidbody2D body))
         {
