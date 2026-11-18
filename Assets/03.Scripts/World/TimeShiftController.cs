@@ -62,8 +62,8 @@ public sealed class TimeShiftController : MonoBehaviour
         isPreparing = false;
         isTransitioning = false;
         currentFlag = flag;
-        presentWorld.SetWorldActive(flag == TimeFlag.Present);
-        pastWorld.SetWorldActive(flag == TimeFlag.Past);
+        GetWorld(flag == TimeFlag.Present ? TimeFlag.Past : TimeFlag.Present).SetWorldActive(false);
+        GetWorld(flag).SetWorldActive(true);
         WorldChanged?.Invoke(currentFlag);
         UpdatePreviews();
         Physics2D.SyncTransforms();
