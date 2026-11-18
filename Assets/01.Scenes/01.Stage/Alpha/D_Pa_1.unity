@@ -3208,6 +3208,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: PastRoot
       objectReference: {fileID: 0}
+    - target: {fileID: 8649749427784295243, guid: ff9703ece8e771748bd28a8fde994c29, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9159740741525514751, guid: ff9703ece8e771748bd28a8fde994c29, type: 3}
       propertyPath: timeFlag
       value: 1
